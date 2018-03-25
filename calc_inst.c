@@ -65,8 +65,7 @@ void exec_eor(unsigned char data) {
 void calc_immediate(void (*calc_exec)(unsigned char)) {
   unsigned char data;
   
-  registers.pc++;
-  data = memory[registers.pc];
+  data = memory[registers.pc + 1];
   calc_exec(data);
 }
 
@@ -99,8 +98,7 @@ void calc_zeropage(void (*exec_calc)(unsigned char)) {
   unsigned char offset;
   unsigned char data;
 
-  registers.pc++;
-  offset = memory[registers.pc];
+  offset = memory[registers.pc + 1];
   data = memory[offset];
 
   exec_calc(data);
@@ -135,8 +133,7 @@ void calc_zeropage_x(void (*exec_calc)(unsigned char)) {
   unsigned char offset;
   unsigned char data;
 
-  registers.pc++;
-  offset = memory[registers.pc];
+  offset = memory[registers.pc + 1];
   offset += registers.index_x;
   data = memory[offset];
 
@@ -172,10 +169,8 @@ void calc_absolute(void (*exec_calc)(unsigned char)) {
   unsigned short offset;
   unsigned char data;
 
-  registers.pc++;
-  offset = memory[registers.pc];
-  registers.pc++;
-  offset |= (unsigned short)memory[registers.pc] << 8;
+  offset = memory[registers.pc + 1];
+  offset |= (unsigned short)memory[registers.pc + 2] << 8;
   data = memory[offset];
 
   exec_calc(data);
@@ -212,10 +207,8 @@ int calc_absolute_index(unsigned char index, void (*exec_calc)(unsigned char)) {
   unsigned char data;
   int additional_cycle = 0;
 
-  registers.pc++;
-  before = offset_lower = memory[registers.pc];
-  registers.pc++;
-  offset_upper = memory[registers.pc];
+  before = offset_lower = memory[registers.pc + 1];
+  offset_upper = memory[registers.pc + 2];
 
   offset_lower += index;
   if(offset_lower < before) {
@@ -275,8 +268,7 @@ void calc_indirect_x(void (*exec_calc)(unsigned char)) {
   unsigned short addr;
   unsigned char data;
 
-  registers.pc++;
-  offset = memory[registers.pc];
+  offset = memory[registers.pc + 1];
 
   offset += registers.index_x;
   addr = memory[offset];
@@ -318,8 +310,7 @@ int calc_indirect_y(void (*exec_calc)(unsigned char)) {
   unsigned char data;
   int additional_cycle = 0;
 
-  registers.pc++;
-  offset = memory[registers.pc];
+  offset = memory[registers.pc + 1];
 
   before = addr_lower = memory[offset];
   addr_upper = memory[offset + 1];
