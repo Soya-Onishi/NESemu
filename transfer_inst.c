@@ -254,3 +254,42 @@ int sta_indirect_y() {
   return transfer_indirect_y(exec_sta);
 }
 
+int tax_implied() {
+  registers.index_x = registers.accumulator;
+  set_z_flag(registers.index_x);
+  set_n_flag(registers.index_x);
+  return 0;
+}
+
+int txa_implied() {
+  registers.accumulator = registers.index_x;
+  set_z_flag(registers.accumulator);
+  set_n_flag(registers.accumulator);
+  return 0;
+}
+
+int tay_implied() {
+  registers.index_y = registers.accumulator;
+  set_z_flag(registers.index_y);
+  set_n_flag(registers.index_y);
+  return 0;
+}
+
+int tya_implied() {
+  registers.accumulator = registers.index_y;
+  set_z_flag(registers.accumulator);
+  set_n_flag(registers.accumulator);
+  return 0;
+}
+
+int tsx_implied() {
+  registers.index_x = registers.stack;
+  set_z_flag(registers.index_x);
+  set_n_flag(registers.index_x);
+  return 0;
+}
+
+int txs_implied() {
+  registers.stack = registers.index_x;
+  return 0;
+}
