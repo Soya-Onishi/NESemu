@@ -1,0 +1,1 @@
+unsigned char memory[0x10000];

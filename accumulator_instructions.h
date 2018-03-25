@@ -1,0 +1,6 @@
+#ifndef HEADER_ACCUMULATOR_INSTRUCTIONS
+#define HEADER_ACCUMULATOR_INSTRUCTIONS
+
+void accumulator_inst();
+
+#endif
