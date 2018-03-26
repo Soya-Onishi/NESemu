@@ -5,5 +5,6 @@ int reset_implied();
 int nmi_implied();
 int irq_implied();
 int brk_implied();
+int rti_implied();
 
 #endif

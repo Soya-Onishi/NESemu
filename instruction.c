@@ -1,87 +1,97 @@
 #include "instruction.h"
 #include "cpu_circuit.h"
 #include "memory.h"
-#include ""
-
+#include "instructions/bit_inst.h"
+#include "instructions/branch_inst.h"
+#include "instructions/calc_inst.h"
+#include "instructions/compare_inst.h"
+#include "instructions/flag_inst.h"
+#include "instructions/increment_inst.h"
+#include "instructions/interrupt_inst.h"
+#include "instructions/jump_inst.h"
+#include "instructions/nop_inst.h"
+#include "instructions/shift_inst.h"
+#include "instructions/stack_inst.h"
+#include "instructions/transfer_inst.h"
 
 instruction instruction_set[0x100] = {
-  {BRK, ADDR_IMPLIED, 7, 1}, {ORA, ADDR_INDEX_INDIRECT, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, 
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {ORA, ADDR_ZEROPAGE, 3, 2},{ASL, ADDR_ZEROPAGE, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, 
-  {PHP, ADDR_IMPLIED, 3, 1}, {ORA, ADDR_IMMEDIATE, 2, 2}, {ASL, ADDR_ACCUMULATOR, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, 
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {ORA, ADDR_ABSOLUTE, 4, 3}, {ASL, ADDR_ABSOLUTE, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {brk_implied, 7, 1}, {ora_indirect_x, 6, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0}, 
+  {unknown_opcode, 0, 0}, {ora_zeropage, 3, 2},{asl_zeropage, 5, 2}, {unknown_opcode, 0, 0}, 
+  {php_implied, 3, 1}, {ora_immediate, 2, 2}, {asl_accumulator, 2, 1}, {unknown_opcode, 0, 0}, 
+  {unknown_opcode, 0, 0}, {ora_absolute, 4, 3}, {asl_absolute, 6, 3}, {unknown_opcode, 0, 0},
 
-  {BPL, ADDR_RELATIVE, 2, 2}, {ORA, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, 
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {ORA, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {ASL, ADDR_INDEX_ZEROPAGE_X, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, 
-  {CLC, ADDR_IMPLIED, 2, 1}, {ORA, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {ORA, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {ASL, ADDR_INDEX_ABSOLUTE_X, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {bpl_relative, 2, 2}, {ora_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0}, 
+  {unknown_opcode, 0, 0}, {ora_zeropage_x, 4, 2}, {asl_zeropage_x, 6, 2}, {unknown_opcode, 0, 0}, 
+  {clc_implied, 2, 1}, {ora_absolute_y, 4, 3}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {ora_absolute_x, 4, 3}, {asl_absolute_x, 6, 3}, {unknown_opcode, 0, 0},
 
-  {JSR, ADDR_ABSOLUTE, 6, 3}, {AND, ADDR_INDEX_INDIRECT, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {BIT, ADDR_ZEROPAGE, 3, 2}, {AND, ADDR_ZEROPAGE, 3, 2}, {ROL, ADDR_ZEROPAGE, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {PLP, ADDR_IMPLIED, 4, 1}, {AND, ADDR_IMMEDIATE, 2, 2}, {ROL, ADDR_ACCUMULATOR, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {BIT, ADDR_ABSOLUTE, 4, 3}, {AND, ADDR_ABSOLUTE, 4, 3}, {ROL, ADDR_ABSOLUTE, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {jsr_absolute, 6, 3}, {and_indirect_x, 6, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {bit_zeropage, 3, 2}, {and_zeropage, 3, 2}, {rol_zeropage, 5, 2}, {unknown_opcode, 0, 0},
+  {plp_implied, 4, 1}, {and_immediate, 2, 2}, {rol_accumulator, 2, 1}, {unknown_opcode, 0, 0},
+  {bit_absolute, 4, 3}, {and_absolute, 4, 3}, {rol_absolute, 6, 3}, {unknown_opcode, 0, 0},
 
-  {BMI, ADDR_RELATIVE, 2, 2}, {AND, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {AND, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {ROL, ADDR_INDEX_ZEROPAGE_X, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {SEC, ADDR_IMPLIED, 2, 1}, {AND, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {AND, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {ROL, ADDR_INDEX_ABSOLUTE_X, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {bmi_relative, 2, 2}, {and_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {and_zeropage_x, 4, 2}, {rol_zeropage_x, 6, 2}, {unknown_opcode, 0, 0},
+  {sec_implied, 2, 1}, {and_absolute_y, 4, 3}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {and_absolute_x, 4, 3}, {rol_absolute_x, 6, 3}, {unknown_opcode, 0, 0},
 
-  {RTI, ADDR_IMPLIED, 6, 1}, {EOR, ADDR_INDEX_INDIRECT, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {EOR, ADDR_ZEROPAGE, 3, 2}, {LSR, ADDR_ZEROPAGE, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {PHA, ADDR_IMPLIED, 4, 1}, {EOR, ADDR_IMMEDIATE, 2, 2}, {LSR, ADDR_ACCUMULATOR, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {JMP, ADDR_ABSOLUTE, 3, 3}, {EOR, ADDR_ABSOLUTE, 4, 3}, {LSR, ADDR_ABSOLUTE, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {rti_implied, 6, 1}, {eor_indirect_x, 6, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {eor_zeropage, 3, 2}, {lsr_zeropage, 5, 2}, {unknown_opcode, 0, 0},
+  {pha_implied, 4, 1}, {eor_immediate, 2, 2}, {lsr_accumulator, 2, 1}, {unknown_opcode, 0, 0},
+  {jmp_absolute, 3, 3}, {eor_absolute, 4, 3}, {lsr_absolute, 6, 3}, {unknown_opcode, 0, 0},
 
-  {BVC, ADDR_RELATIVE, 2, 2}, {EOR, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {EOR, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {LSR, ADDR_INDEX_ZEROPAGE_X, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {CLI, ADDR_IMPLIED, 2, 1}, {EOR, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {EOR, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {LSR, ADDR_INDEX_ABSOLUTE_X, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {bvc_relative, 2, 2}, {eor_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {eor_zeropage_x, 4, 2}, {lsr_zeropage_x, 6, 2}, {unknown_opcode, 0, 0},
+  {cli_implied, 2, 1}, {eor_absolute_y, 4, 3}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {eor_absolute_x, 4, 3}, {lsr_absolute_x, 6, 3}, {unknown_opcode, 0, 0},
 
-  {RTS, ADDR_IMPLIED, 6, 1}, {ADC, ADDR_INDEX_INDIRECT, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {ADC, ADDR_ZEROPAGE, 3, 2}, {ROR, ADDR_ZEROPAGE, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {PLA, ADDR_IMPLIED, 4, 1}, {ADC, ADDR_IMMEDIATE, 2, 2}, {ROR, ADDR_ACCUMULATOR, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {JMP, ADDR_ABSOLUTE_INDIRECT, 5, 3}, {ADC, ADDR_ABSOLUTE, 4, 3}, {ROR, ADDR_ABSOLUTE, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {rts_implied, 6, 1}, {adc_indirect_x, 6, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {adc_zeropage, 3, 2}, {ror_zeropage, 5, 2}, {unknown_opcode, 0, 0},
+  {pla_implied, 4, 1}, {adc_immediate, 2, 2}, {ror_accumulator, 2, 1}, {unknown_opcode, 0, 0},
+  {jmp_indirect, 5, 3}, {adc_absolute, 4, 3}, {ror_absolute, 6, 3}, {unknown_opcode, 0, 0},
 
-  {BVS, ADDR_RELATIVE, 2, 2}, {ADC, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {ADC, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {ROR, ADDR_INDEX_ZEROPAGE_X, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {SEI, ADDR_IMPLIED, 2, 1}, {ADC, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {ADC, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {ROR, ADDR_INDEX_ABSOLUTE_X, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {bvs_relative, 2, 2}, {adc_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {adc_zeropage_x, 4, 2}, {ror_zeropage_x, 6, 2}, {unknown_opcode, 0, 0},
+  {sei_implied, 2, 1}, {adc_absolute_y, 4, 3}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {adc_absolute_x, 4, 3}, {ror_absolute_x, 6, 3}, {unknown_opcode, 0, 0},
 
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {STA, ADDR_INDEX_INDIRECT, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {STY, ADDR_ZEROPAGE, 3, 2}, {STA, ADDR_ZEROPAGE, 3, 2}, {STX, ADDR_ZEROPAGE, 3, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {DEY, ADDR_IMPLIED, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {TXA, ADDR_IMPLIED, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {STY, ADDR_ABSOLUTE, 4, 3}, {STA, ADDR_ABSOLUTE, 4, 3}, {STX, ADDR_ABSOLUTE, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {unknown_opcode, 0, 0}, {sta_indirect_x, 6, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {sty_zeropage, 3, 2}, {sta_zeropage, 3, 2}, {stx_zeropage, 3, 2}, {unknown_opcode, 0, 0},
+  {dey_implied, 2, 1}, {unknown_opcode, 0, 0}, {txa_implied, 2, 1}, {unknown_opcode, 0, 0},
+  {sty_absolute, 4, 3}, {sta_absolute, 4, 3}, {stx_absolute, 4, 3}, {unknown_opcode, 0, 0},
 
-  {BCC, ADDR_RELATIVE, 2, 2}, {STA, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {STY, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {STA, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {STX, ADDR_INDEX_ZEROPAGE_Y, 4, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {TYA, ADDR_IMPLIED, 2, 1}, {STA, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {TXS, ADDR_IMPLIED, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {STA, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {bcc_relative, 2, 2}, {sta_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {sty_zeropage_index, 4, 2}, {sta_zeropage_index, 4, 2}, {stx_zeropage_index, 4, 2}, {unknown_opcode, 0, 0},
+  {tya_implied, 2, 1}, {sta_absolute_index_y, 4, 3}, {txs_implied, 2, 1}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {sta_absolute_index_x, 4, 3}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
 
-  {LDY, ADDR_IMMEDIATE, 2, 2}, {LDA, ADDR_INDEX_INDIRECT, 6, 2}, {LDX, ADDR_IMMEDIATE, 2, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {LDY, ADDR_ZEROPAGE, 3, 2}, {LDA, ADDR_ZEROPAGE, 3, 2}, {LDX, ADDR_ZEROPAGE, 3, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {TAY, ADDR_IMPLIED, 2, 1}, {LDA, ADDR_IMMEDIATE, 2, 2}, {TAX, ADDR_IMPLIED, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {LDY, ADDR_ABSOLUTE, 4, 3}, {LDA, ADDR_ABSOLUTE, 4, 3}, {LDX, ADDR_ABSOLUTE, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {ldy_immediate, 2, 2}, {lda_indirect_x, 6, 2}, {ldx_immediate, 2, 2}, {unknown_opcode, 0, 0},
+  {ldy_zeropage, 3, 2}, {lda_zeropage, 3, 2}, {ldx_zeropage, 3, 2}, {unknown_opcode, 0, 0},
+  {tay_implied, 2, 1}, {lda_immediate, 2, 2}, {tax_implied, 2, 1}, {unknown_opcode, 0, 0},
+  {ldy_absolute, 4, 3}, {lda_absolute, 4, 3}, {ldx_absolute, 4, 3}, {unknown_opcode, 0, 0},
 
-  {BCS, ADDR_RELATIVE, 2, 2}, {LDA, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {LDY, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {LDA, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {LDX, ADDR_INDEX_ZEROPAGE_Y, 4, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {CLV, ADDR_IMPLIED, 2, 1}, {LDA, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {TSX, ADDR_IMPLIED, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {LDY, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {LDA, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {LDX, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {bcs_relative, 2, 2}, {lda_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {ldy_zeropage_index, 4, 2}, {lda_zeropage_index, 4, 2}, {ldx_zeropage_index, 4, 2}, {unknown_opcode, 0, 0},
+  {clv_implied, 2, 1}, {lda_absolute_index_y, 4, 3}, {tsx_implied, 2, 1}, {unknown_opcode, 0, 0},
+  {ldy_absolute_index_x, 4, 3}, {lda_absolute_index_x, 4, 3}, {ldx_absolute_index_y, 4, 3}, {unknown_opcode, 0, 0},
 
-  {CPY, ADDR_IMMEDIATE, 2, 2}, {CMP, ADDR_INDEX_INDIRECT, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {CPY, ADDR_ZEROPAGE, 3, 2}, {CMP, ADDR_ZEROPAGE, 3, 2}, {DEC, ADDR_ZEROPAGE, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INY, ADDR_IMPLIED, 2, 1}, {CMP, ADDR_IMMEDIATE, 2, 2}, {DEX, ADDR_IMPLIED, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {CPY, ADDR_ABSOLUTE, 4, 3}, {CMP, ADDR_ABSOLUTE, 4, 3}, {DEC, ADDR_ABSOLUTE, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {cpy_immediate, 2, 2}, {cmp_indirect_x, 6, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {cpy_zeropage, 3, 2}, {cmp_zeropage, 3, 2}, {dec_zeropage, 5, 2}, {unknown_opcode, 0, 0},
+  {iny_implied, 2, 1}, {cmp_immediate, 2, 2}, {dex_implied, 2, 1}, {unknown_opcode, 0, 0},
+  {cpy_absolute, 4, 3}, {cmp_absolute, 4, 3}, {dec_absolute, 6, 3}, {unknown_opcode, 0, 0},
 
-  {BNE, ADDR_RELATIVE, 2, 2}, {CMP, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {CMP, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {DEC, ADDR_INDEX_ZEROPAGE_X, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {CLD, ADDR_IMPLIED, 2, 1}, {CMP, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {CMP, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {DEC, ADDR_INDEX_ABSOLUTE_X, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {bne_relative, 2, 2}, {cmp_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {cmp_zeropage_x, 4, 2}, {dec_zeropage_x, 6, 2}, {unknown_opcode, 0, 0},
+  {cld_implied, 2, 1}, {cmp_absolute_y, 4, 3}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {cmp_absolute_x, 4, 3}, {dec_absolute_x, 6, 3}, {unknown_opcode, 0, 0},
 
-  {CPX, ADDR_IMMEDIATE, 2, 2}, {SBC, ADDR_INDEX_INDIRECT, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {CPX, ADDR_ZEROPAGE, 3, 2}, {SBC, ADDR_ZEROPAGE, 3, 2}, {INC, ADDR_ZEROPAGE, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INX, ADDR_IMPLIED, 2, 1}, {SBC, ADDR_IMMEDIATE, 2, 2}, {NOP, ADDR_IMPLIED, 2, 1}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {CPX, ADDR_ABSOLUTE, 4, 3}, {SBC, ADDR_ABSOLUTE, 4, 3}, {INC, ADDR_ABSOLUTE, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
+  {cpx_immediate, 2, 2}, {sbc_indirect_x, 6, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {cpx_zeropage, 3, 2}, {sbc_zeropage, 3, 2}, {inc_zeropage, 5, 2}, {unknown_opcode, 0, 0},
+  {inx_implied, 2, 1}, {sbc_immediate, 2, 2}, {nop_implied, 2, 1}, {unknown_opcode, 0, 0},
+  {cpx_absolute, 4, 3}, {sbc_absolute, 4, 3}, {inc_absolute, 6, 3}, {unknown_opcode, 0, 0},
   
-  {BEQ, ADDR_RELATIVE, 2, 2}, {SBC, ADDR_INDIRECT_INDEX, 5, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {SBC, ADDR_INDEX_ZEROPAGE_X, 4, 2}, {INC, ADDR_INDEX_ZEROPAGE_X, 6, 2}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {SED, ADDR_IMPLIED, 2, 1}, {SBC, ADDR_INDEX_ABSOLUTE_Y, 4, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}, {INST_UNDEF, ADDR_UNDEF, 0, 0},
-  {INST_UNDEF, ADDR_UNDEF, 0, 0}, {SBC, ADDR_INDEX_ABSOLUTE_X, 4, 3}, {INC, ADDR_INDEX_ABSOLUTE_X, 6, 3}, {INST_UNDEF, ADDR_UNDEF, 0, 0}
+  {beq_relative, 2, 2}, {sbc_indirect_y, 5, 2}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {sbc_zeropage_x, 4, 2}, {inc_zeropage_x, 6, 2}, {unknown_opcode, 0, 0},
+  {sed_implied, 2, 1}, {sbc_absolute_y, 4, 3}, {unknown_opcode, 0, 0}, {unknown_opcode, 0, 0},
+  {unknown_opcode, 0, 0}, {sbc_absolute_x, 4, 3}, {inc_absolute_x, 6, 3}, {unknown_opcode, 0, 0}
 };
