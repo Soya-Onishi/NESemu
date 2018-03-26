@@ -5,7 +5,7 @@ int cmp_immediate();
 int cpx_immediate();
 int cpy_immediate();
 
-int cpm_zeropage();
+int cmp_zeropage();
 int cpx_zeropage();
 int cpy_zeropage();
 

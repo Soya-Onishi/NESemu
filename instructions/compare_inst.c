@@ -66,7 +66,7 @@ void compare_zeropage(void (*exec_comp)(unsigned char)) {
   exec_comp(memory[addr]);
 }
 
-int cpm_zeropage() {
+int cmp_zeropage() {
   compare_zeropage(exec_cmp);
   return 0;
 }
