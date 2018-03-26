@@ -1,6 +1,6 @@
-#include"cpu_circuit.h"
-#include"memory.h"
-#include"status_flag_manager.h"
+#include"../cpu_circuit.h"
+#include"../memory.h"
+#include"../status_flag_manager.h"
 
 int pha_implied() {
   memory[registers.stack--] = registers.accumulator;

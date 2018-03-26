@@ -1,5 +1,6 @@
-#include"cpu_circuit.h"
-#include"memory.h"
+#include"../cpu_circuit.h"
+#include"../memory.h"
+#include"../status_flag_manager.h"
 
 int jmp_absolute() {
   unsigned short addr;

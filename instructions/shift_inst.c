@@ -1,6 +1,6 @@
-#include"cpu_circuit.h"
-#include"memory.h"
-#include"status_flag_manager.h"
+#include"../cpu_circuit.h"
+#include"../memory.h"
+#include"../status_flag_manager.h"
 
 unsigned char exec_asl(unsigned char data);
 unsigned char exec_lsr(unsigned char data);

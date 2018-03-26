@@ -1,5 +1,6 @@
-#include"cpu_circuit.h"
-#include"memory.h"
+#include"../cpu_circuit.h"
+#include"../memory.h"
+#include"../status_flag_manager.h"
 
 #define RESET_VEC_LOWER 0xfffc
 #define RESET_VEC_UPPER 0xfffd

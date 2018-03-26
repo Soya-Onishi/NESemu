@@ -1,6 +1,6 @@
-#include"cpu_circuit.h"
-#include"memory.h"
-#include"status_flag_manager.h"
+#include"../cpu_circuit.h"
+#include"../memory.h"
+#include"../status_flag_manager.h"
 
 void exec_lda(unsigned short addr);
 void exec_ldx(unsigned short addr);

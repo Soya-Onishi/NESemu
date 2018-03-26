@@ -1,6 +1,6 @@
-#include"cpu_circuit.h"
-#include"memory.h"
-#include"status_flag_manager.h"
+#include"../cpu_circuit.h"
+#include"../memory.h"
+#include"../status_flag_manager.h"
 
 void exec_adc(unsigned char data);
 void exec_sbc(unsigned char data);

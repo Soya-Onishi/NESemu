@@ -79,8 +79,7 @@ typedef enum {
 }addressing;
 
 typedef struct {
-  instruction_name inst;
-  addressing addr;
+  int (*instruction)();
   char cycle;
   char length;
 }instruction;
