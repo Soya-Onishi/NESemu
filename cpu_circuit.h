@@ -28,7 +28,6 @@ typedef struct circuit_line{
   unsigned char data;
   unsigned char addr_lower;
   unsigned char addr_upper;
-  unsigned short inst_head_pc;
 }circuit_line;
 
 extern instruction now_inst;
