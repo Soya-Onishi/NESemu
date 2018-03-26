@@ -2,6 +2,21 @@
 #include"memory.h"
 #include"status_flag_manager.h"
 
+void exec_lda(unsigned short addr);
+void exec_ldx(unsigned short addr);
+void exec_ldy(unsigned short addr);
+void exec_sta(unsigned short addr);
+void exec_stx(unsigned short addr);
+void exec_sty(unsigned short addr);
+
+void transfer_immediate(void (*exec_trans)(unsigned short));
+void transfer_zeropage(void (*exec_trans)(unsigned short));
+void transfer_zeropage_index(void (*exec_trans)(unsigned short), unsigned char index);
+void transfer_absolute(void (*exec_trans)(unsigned short));
+int transfer_absolute_index(void (*exec_trans)(unsigned short), unsigned char index);
+void transfer_indirect_x(void (*exec_trans)(unsigned short));
+int transfer_indirect_y(void (*exec_trans)(unsigned short));
+
 void exec_lda(unsigned short addr) {
   registers.accumulator = memory[addr];
   set_z_flag(registers.accumulator);

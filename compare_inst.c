@@ -2,6 +2,18 @@
 #include"memory.h"
 #include"status_flag_manager.h"
 
+void exec_compare(unsigned char a, unsigned char m);
+
+void exec_cmp(unsigned char data);
+void exec_cpx(unsigned char data);
+void exec_cpy(unsigned char data);
+
+void compare_immediate(void (*exec_comp)(unsigned char));
+void compare_zeropage(void (*exec_comp)(unsigned char));
+void compare_absolute(void (*exec_comp)(unsigned char));
+
+int cmp_absolute_index(unsigned char index);
+
 void exec_compare(unsigned char a, unsigned char m) {
   char result;
 

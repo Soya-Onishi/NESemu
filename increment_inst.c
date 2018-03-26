@@ -2,6 +2,15 @@
 #include"memory.h"
 #include"status_flag_manager.h"
 
+unsigned char exec_increment(unsigned char data);
+unsigned char exec_decrement(unsigned char data);
+
+int inc_dec_zeropage(unsigned char(*exec_inc_dec)(unsigned char));
+int inc_dec_zeropage_x(unsigned char(*exec_inc_dec)(unsigned char));
+int inc_dec_absolute(unsigned char(*exec_inc_dec)(unsigned char));
+int inc_dec_absolute_x(unsigned char(*exec_inc_dec)(unsigned char));
+
+
 unsigned char exec_increment(unsigned char data) {
   return data + 1;
 }

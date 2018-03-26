@@ -1,6 +1,17 @@
 #include"cpu_circuit.h"
 #include"memory.h"
 
+int exec_bcc();
+int exec_bcs();
+int exec_beq();
+int exec_bne();
+int exec_bvc();
+int exec_bvs();
+int exec_bpl();
+int exec_bmi();
+
+int branch_relative(int (*exec_branch)());
+
 int exec_bcc() {
   return ~registers.status & STATUS_C;
 }

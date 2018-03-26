@@ -2,6 +2,18 @@
 #include"memory.h"
 #include"status_flag_manager.h"
 
+unsigned char exec_asl(unsigned char data);
+unsigned char exec_lsr(unsigned char data);
+unsigned char exec_rol(unsigned char data);
+unsigned char exec_ror(unsigned char data);
+
+void shift_accumulator(unsigned char (*exec_shift)(unsigned char));
+void shift_zeropage(unsigned char (*exec_shift)(unsigned char));
+void shift_zeropage_x(unsigned char (*exec_shift)(unsigned char));
+void shift_absolute(unsigned char(*exec_shift)(unsigned char));
+int shift_absolute_x(unsigned char(*exec_shift)(unsigned char));
+
+
 unsigned char exec_asl(unsigned char data) {
   if(data & (1 << 7)) {
     registers.status |= STATUS_C;

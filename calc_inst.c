@@ -2,6 +2,20 @@
 #include"memory.h"
 #include"status_flag_manager.h"
 
+void exec_adc(unsigned char data);
+void exec_sbc(unsigned char data);
+void exec_and(unsigned char data);
+void exec_ora(unsigned char data);
+void exec_eor(unsigned char data);
+
+void calc_immediate(void (*calc_exec)(unsigned char));
+void calc_zeropage(void (*exec_calc)(unsigned char));
+void calc_zeropage_x(void (*exec_calc)(unsigned char));
+void calc_absolute(void (*exec_calc)(unsigned char));
+int calc_absolute_index(unsigned char index, void (*exec_calc)(unsigned char));
+void calc_indirect_x(void (*exec_calc)(unsigned char));
+int calc_indirect_y(void (*exec_calc)(unsigned char));
+
 void exec_adc(unsigned char data) {
   unsigned char before = registers.accumulator;
 
