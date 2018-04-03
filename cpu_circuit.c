@@ -4,6 +4,7 @@
 #include"instruction.h"
 #include"accumulator_instructions.h"
 #include"cpu_circuit.h"
+#include"instructions/interrupt_inst.h"
 
 typedef enum {
   INTERRUPT_RESET_UPPER = 0xfffd,
@@ -20,39 +21,39 @@ typedef enum {
 
 cpu_register registers;
 circuit_line c_line;
+interrupt_flags intr_flags;
 unsigned char local_cycle;
 
 unsigned int cpu_cycle;
 instruction now_inst;
 void (*circuit_functions[7])();
 
-void fetch_instruction() {
-  unsigned char op;
+int fetch_instruction() {
   instruction inst;
+  unsigned char opcode;
+  int additional_cycle;
 
-  op = memory[registers.pc];
-  now_inst = instruction_set[op];
-  local_cycle = 0;
-
-  switch(now_inst.addr) {
-    case ADDR_ACCUMULATOR:
-      accumulator_inst();
-    case ADDR_IMMEDIATE:
-    case ADDR_ABSOLUTE:
-    case ADDR_ZEROPAGE:
-    case ADDR_INDEX_ZEROPAGE_X:
-    case ADDR_INDEX_ZEROPAGE_Y:
-    case ADDR_INDEX_ABSOLUTE_X:
-    case ADDR_INDEX_ABSOLUTE_Y:
-    case ADDR_IMPLIED:
-    case ADDR_RELATIVE:
-    case ADDR_INDEX_INDIRECT:
-    case ADDR_INDIRECT_INDEX:
-    case ADDR_ABSOLUTE_INDIRECT:
-    case ADDR_UNDEF:
-      printf("unknown addressing\n");
-      exit(1);
+  if(intr_flags.reset) {
+    reset_implied();
+    return 6;
   }
+
+  if(intr_flags.nmi) {
+    nmi_implied();
+    return 7;
+  }
+
+  if(intr_flags.irq) {
+    irq_implied();
+    return 7;
+  }
+
+  opcode = memory[registers.pc];
+  inst = instruction_set[opcode];
+  additional_cycle = inst.instruction();
+  registers.pc += inst.length;
+
+  return additional_cycle + inst.cycle;
 }
 
 

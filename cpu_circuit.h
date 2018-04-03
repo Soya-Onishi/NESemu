@@ -3,7 +3,7 @@
 
 #include "instruction.h"
 
-void fetch_instruction();
+int fetch_instruction();
 
 typedef enum {
   STATUS_N = 1 << 7,
@@ -29,6 +29,12 @@ typedef struct circuit_line{
   unsigned char addr_lower;
   unsigned char addr_upper;
 }circuit_line;
+
+typedef struct interrupt_flags {
+  unsigned char nmi;
+  unsigned char irq;
+  unsigned char reset;
+} interrupt_flags;
 
 extern instruction now_inst;
 extern void (*circuit_functions[])();
