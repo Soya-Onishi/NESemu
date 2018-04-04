@@ -21,33 +21,48 @@ void rendering() {
 
 void sprite_process() {
   static int n = 0;
+  static int m = 0;
   static int is_disable_writing = 0;
 
   if(scanline >= 0 && scanline <= 239) {
     if(dots >= 1 && dots <= 32) {
-      second_oam[dots - 1] = 0xFF;
+      second_oam[dots - 1][0] = 0xFF;
     } else if(dots >= 65 && dots <= 256 && n < 64) {
+      if(is_disable_writing) return;
+
       if(dots % 2 == 0) {
-        char y_coordinate = oam[n << 2];
+        char y_coordinate = oam[n][m];
 
-        if(y_coordinate >= scanline + 1 && y_coordinate <= scanline + 9 && sprite_count < 8) {
-          short offset = sprite_count << 2;
-          short oam_offset = n << 2;
+        if(y_coordinate >= scanline + 1 && y_coordinate <= scanline + 9) {
+          if(sprite_count < 8) {
+            short offset = sprite_count << 2;
+            short oam_offset = n << 2;
 
-          second_oam[offset] = y_coordinate;
-          second_oam[offset + 1] = oam[oam_offset + 1];
-          second_oam[offset + 2] = oam[oam_offset + 2];
-          second_oam[offset + 3] = oam[oam_offset + 3];
-          
-          sprite_count++;
+            second_oam[offset][0] = y_coordinate;
+            second_oam[offset][1] = oam[oam_offset][1];
+            second_oam[offset][2] = oam[oam_offset][2];
+            second_oam[offset][3] = oam[oam_offset][3];
+            
+            sprite_count++;
+          } else {
+            //TODO:set $2002 sprite overflow flag
+          }
+        } else {
+          if(sprite_count >= 8) {
+            m = (m + 1) % 4;
+          }
         }
         
-        n++;
+        n = (n + 1) % 64;
+        if(n == 0) {
+          is_disable_writing = 1;
+        }
       }
     } else if(dots >= 257 && dots <= 320) {
       int internal_dots;
       int offset;
       unsigned char index, y;
+      const unsigned char V_REV = 1 << 7;
 
       switch(internal_dots) {
         case 0:
@@ -61,17 +76,24 @@ void sprite_process() {
           offset = (dots - 257) / 8;
           internal_dots = (dots - 257) % 8;
 
-          index = second_oam[offset + 1];
-          y = second_oam[offset];
+          index = second_oam[offset][1];
+          y = second_oam[offset][0];
 
-          index = /*pattern table left or right*/ | ((unsigned short)index << 4);
-          index += scanline - y;
+          sprite[offset].attribute = second_oam[offset][2];
+
+          index = (/*TODO:pattern table left or right*/ | ((unsigned short)index << 4)) & 0x1FF0;
           
-          ppu_reg.sprite_pattern[offset][0] = vram[index];
-          ppu_reg.sprite_pattern[offset][1] = vram[index + 8];
+          if(sprite[offset].attribute & V_REV) {
+            index += 7 - (scanline - (y + 1));
+          } else {
+            index += scanline - (y + 1);
+          }
+          
+          sprite[offset].sprite_low = vram[index];
+          sprite[offset].sprite_high = vram[index + 8];
 
-          sprite_attribute[offset] = second_oam[offset + 2];
-          sprite_x_counter[offset] = second_oam[offset + 3];
+          sprite[offset].x_counter = second_oam[offset][3];
+          sprite[offset].is_active = 0;
           break;
         case 7:
           break;
@@ -88,15 +110,46 @@ void background_process() {
 
 void rendering_process() {
   unsigned char fine_x = ppu_reg.fine_x;
-  unsigned char offset;
-  unsigned char bg_index, bg_color;
+  short offset;
+  unsigned char bg_index, sp_index;
+  unsigned short bg_color, sp_color;
+  int i;
+  const unsigned char H_REV = 1 << 6;
+  const unsigned char PALLET_BITS = 0x03;
+  const unsigned char BG_PRIO = 1 << 5;
 
   offset = 1 << fine_x;
-  bg_index = ((ppu_reg.pattern[0] & offset) >> offset) | ((ppu_reg.pattern[1] & offset) >> (offset - 1));
+  bg_index = ((ppu_reg.pattern[0] & offset) >> fine_x) | ((ppu_reg.pattern[1] & offset) >> (fine_x - 1));
   bg_index &= 0x0003;
 
-  bg_color = ((ppu_reg.attribute[0] & offset) >> (offset - 2)) | (ppu_reg.attribute[1] & offset) >> (offset - 3)) | bg_index; 
+  bg_color = ((ppu_reg.attribute[0] & offset) >> (fine_x - 2)) | ((ppu_reg.attribute[1] & offset) >> (fine_x - 3)) | bg_index; 
   bg_color &= 0x000F;
+
+  for(i = 0; i < 8; i++) {
+    if(sprite[i].x_counter <= 0 && sprite[i].x_counter >= -7) {
+      if(sprite[i].attribute & H_REV) {
+        offset = 7 + sprite[i].x_counter;
+      } else {
+        offset = -sprite[i].x_counter;
+      }
+
+      sp_index = 0x0003 & ((sprite[i].sprite_high & (1 << offset) >> (offset - 1)) | (sprite[i].sprite_low & (1 << offset)) >> offset);
+      sp_index = 0x000F & (((sprite[i].attribute << 2) & 0x000C) | sp_index); 
+      sp_color = 0x3F10 | sp_index;
+      break;
+    }
+  }
+
+  //determine output color
+  if(i == 8|| sprite[i].attribute & BG_PRIO) {
+    //determine bg
+  } else {
+    //determine sp
+  }
+
+  for(i = 0; i < 8; i++) {
+    sprite[i].x_counter--;
+  }
 }
 
 void pre_render_scanline() {
