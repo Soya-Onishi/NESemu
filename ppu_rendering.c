@@ -6,9 +6,14 @@
 static int dots = 0;
 static int scanline = -1;
 static int sprite_count = 0;
+static int frame = 0;
 
-void rendering() {
+void ppu_rendering() {
   
+  if(scanline == 0 && dots == 0 && frame % 2 == 1) {
+    dots++;
+  }
+
   //process
 
 

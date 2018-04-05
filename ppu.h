@@ -1,24 +1,46 @@
 #ifndef HEADER_PPU
 #define HEADER_PPU
 
+#define SPRITE_SIZE (1 << 5)
+
+#define START_VBLANK (1 << 7)
+#define SPRITE_HIT (1 << 6)
+#define SPRITE_OVERFLOW (1 << 5)
+
+#define V_REV (1 << 7)
+#define H_REV (1 << 6)
+#define BG_PRIO (1 << 5)
+#define SPRITE_PALLET (3)
+
+
 typedef struct ppu_registers {
+  unsigned char ctrl;
+  unsigned char mask;
+  unsigned char status;
+  unsigned char oamaddr;
+  unsigned char oamdata;
+  unsigned char scroll;
+  unsigned char ppuaddr;
+  unsigned char ppudata;
+  unsigned char oamdma;
+}ppu_registers;
+
+typedef struct ppu_rendering_reg {
   unsigned short v;
   unsigned short t;
   unsigned char toggle;
   unsigned char fine_x;
-  unsigned short pattern[2];
-  unsigned char attribute[2];
-  //unsigned char sprite_pattern[8][2];
-}ppu_registers;
+}ppu_rendering_reg;
 
 typedef struct rendering_sprite {
   unsigned char attribute;
   short x_counter;
   unsigned char sprite_high;
   unsigned char sprite_low;
-  unsigned char is_active;
 }rendering_sprite;
 
+
+extern ppu_rendering_reg ppu_render_info;
 extern ppu_registers ppu_reg;
 extern rendering_sprite sprite[8];
 
@@ -26,12 +48,15 @@ extern char ppu_addr_bus;
 extern char is_oddframe;
 extern char vram[];
 
-extern char nt_latch;
-extern char at_latch;
-extern char low_bg_latch;
-extern char high_bg_latch;
-//extern char sprite_attribute[];
-//extern char sprite_x_counter[];
+extern unsigned char nt_latch;
+extern unsigned char at_latch;
+extern unsigned char bg_latch[2];
+extern unsigned char attribute_latch;
 
-extern char oam[64][4];
-extern char second_oam[8][4];
+extern unsigned short bg_pattern_reg[2];
+extern unsigned short bg_attr_reg[2];
+
+extern unsigned char oam[64][4];
+extern unsigned char second_oam[8][4];
+
+extern unsigned short rendering_addrs[240][256];
