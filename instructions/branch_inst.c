@@ -51,7 +51,7 @@ int branch_relative(int (*exec_branch)()) {
   
   int additional_cycle = 0;
 
-  offset = (char)memory[registers.pc + 1];
+  offset = (char)memory_read(registers.pc + 1);
   before = registers.pc + 2;
   
   if(exec_branch()) {

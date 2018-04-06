@@ -2,7 +2,6 @@
 #include<stdlib.h>
 #include"memory.h"
 #include"instruction.h"
-#include"accumulator_instructions.h"
 #include"cpu_circuit.h"
 #include"instructions/interrupt_inst.h"
 

@@ -22,8 +22,9 @@ void exec_bit(unsigned char data) {
 int bit_zeropage() {
   unsigned char addr, data;
 
-  addr = memory[registers.pc + 1];
-  data = memory[addr];
+  addr = memory_read(registers.pc + 1);
+  addr = memory_read(addr);
+
   exec_bit(data);
 
   return 0;
@@ -33,10 +34,11 @@ int bit_absolute() {
   unsigned short addr;
   unsigned char data;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2]  << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
 
-  data = memory[addr];
+  data = memory_read(addr);
+  
   exec_bit(data);
 
   return 0;

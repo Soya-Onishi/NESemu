@@ -40,6 +40,7 @@ extern instruction now_inst;
 extern void (*circuit_functions[])();
 extern cpu_register registers;
 extern circuit_line c_line;
+extern interrupt_flags intr_flags;
 
 #define STACK_UPPER 0x01
 

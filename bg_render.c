@@ -1,5 +1,6 @@
 #include "ppu.h"
 #include "ppu_rendering.h"
+#include "cpu_circuit.h"
 
 void bg_tile_fetch(int dots);
 
@@ -31,7 +32,10 @@ void bg_post_rendering() {
 
 void bg_vblank() {
   if(get_scanline() == 241 && get_dots() == 1) {
-    ppu_reg.status |= START_VBLANK;
+    if(ppu_reg.status & NMI_ENABLE) {
+      ppu_reg.status |= START_VBLANK;
+      intr_flags.nmi = 1;
+    }
   }
 }
 
@@ -43,6 +47,8 @@ void bg_pre_render() {
     //clear vblank, sprite 0 hit, sprite overflow flag
     ppu_reg.status &= ~(START_VBLANK | SPRITE_HIT | SPRITE_OVERFLOW);
   }
+
+  if(~ppu_reg.mask & BG_ENABLE) return;
 
   if((dots >= 1 && dots <= 256) || (dots >= 321 && dots <= 336) {
     bg_tile_fetch(dots);

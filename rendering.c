@@ -6,14 +6,22 @@ void rendering() {
   int dots = get_dots();
   unsigned short bg_addr, sprite_addr, addr;
   unsigned char bg_pallet, sprite_pallet;
-  sprite sp;
+  rendering_sprite sp;
 
-  if(scanline >= 0 && scanline <= 239) {
+  if(scanline >= 0 && scanline <= 239 && dots >= 1 && dots <= 256) {
+    //select displayed pixel's address
     bg_addr = calc_bg_pixel_addr();
     sp = calc_sprite_pixel_addr(&sprite_addr);
 
     bg_pallet = bg_addr & 3;
     sprite_pallet = sprite_addr & 3;
+
+    if(~ppu_reg.mask & SPRITE_MASK) {
+      sprite_pallet = 0;
+    }
+    if(~ppu_reg.mask & BG_MASK) {
+      bg_pallet = 0;
+    }
 
     if(bg_pallet == 0 && sprite_pallet == 0) {
       addr = 0x3F00;
@@ -22,15 +30,23 @@ void rendering() {
     } else if(bg_pallet != 0 && sprite_pallet == 0) {
       addr = bg_addr;
     } else if(sp.attribute & BG_PRIO) {
+      if(sp.is_sprite_zero && dots != 256) {
+        ppu_reg.status |= SPRITE_HIT;
+      }
+
       addr = bg_addr;
     } else {
+      if(sp.is_sprite_zero && dots != 256) {
+        ppu_reg.status |= SPRITE_HIT;
+      }
+
       addr = sprite_addr;
     }
 
     //store addr;
-    if(dots <= 256) {
-      rendering_addrs[scanline][dots - 1] = addr;
-    }
+    rendering_addrs[scanline][dots - 1] = addr;
+  } else if(scanline == 240) {
+    address_to_color();
   }
 }
 
@@ -55,6 +71,22 @@ void renew_registers() {
   }
 }
 
+void address_to_color() {
+  int dots = get_dots();
+  int i;
+
+  if(dots < 240) {
+    for(i = 0; i < 256; i++) {
+      unsigned char color_addr;
+      
+      color_addr = vram[rendering_addrs[dots][i]];
+      rendering_color[dots][i] = pallet_colors[color_addr];
+    }
+  } else if(dots == 240) {
+    //TODO:display rendering result by openGL
+  }
+}
+
 void reload_shift_reg() {
   int i;
 
@@ -65,22 +97,55 @@ void reload_shift_reg() {
 }
 
 unsigned short calc_bg_pixel_addr() {
-  unsigned short bg_addr, sprite_addr;
+  unsigned short bg_addr;
   unsigned char fine_x = ppu_render_info.fine_x;
 
-  bg_addr = ((attribute_reg[0] & (1 << fine_x)) << (2 - fine_x)) | ((attribute_reg[1] & (1 << fine_x)) << (3 - fine_x));
-  bg_addr |= ((bg_pattern_reg[0] & (1 << fine_x)) << (0 - fine_x)) | ((bg_pattern_reg[1] & (1 << fine_x)) << (1 - fine_x));
-  bg_addr &= 0x000F;
+  if((~ppu_reg.mask & BG_MASK) && dots < 9) {
+    return 0;
+  }
+
+  if(~ppu_reg.mask & BG_ENABLE) {
+    return 0;
+  }
+
+  if(attribute_reg[0] & (1 << fine_x)) {
+    bg_addr = 1 << 2;
+  } else {
+    bg_addr = 0;
+  }
+
+  if(attribute_reg[1] & (1 << fine_x)) {
+    bg_addr |= 1 << 3;
+  }
+
+  if(bg_pattern_reg[0] & (1 << fine_x)) {
+    bg_addr |= 1 << 0;
+  }
+
+  if(bg_pattern_reg[1] & (1 << fine_x)) {
+    bg_addr |= 1 << 1;
+  }
+
   bg_addr |= 0x3F00;
 
   return bg_addr;
 }
 
-sprite calc_sprite_pixel_addr(unsigned short *addr) {
+rendering_sprite calc_sprite_pixel_addr(unsigned short *addr) {
   unsigned short sprite_addr;
   unsigned char fine_x = ppu_render_info.fine_x;
   int i;
-  sprite std_sprite = {0xFF, 0xFF, 0xFF, 0xFF};
+  rendering_sprite std_sprite = {0xFF, 0xFF, 0xFF, 0xFF};
+
+  if((~ppu_reg.mask & SPRITE_MASK) && get_dots() < 9) {
+    *addr = 0;
+    return std_sprite;
+  }
+
+  if(~ppu_reg.mask & SPRITE_ENABLE) {
+    *addr = 0;
+    return std_sprite;
+  }
 
   for(i = 0; i < 8; i++) {
     if(sprite[i].x_counter <= 0 && sprite[i].x_counter > -8) {
@@ -93,6 +158,16 @@ sprite calc_sprite_pixel_addr(unsigned short *addr) {
       }
 
       sprite_addr = (sprite[i].sprite_high & (1 << offset) << (1 - offset)) | (sprite[i].sprite_low & (1 << offset) << (0 - offset));
+      if(sprite[i].sprite_high & (1 << offset)) {
+        sprite_addr = 1 << 1;
+      } else {
+        sprite_addr = 0;
+      }
+
+      if(sprite[i].sprite_low & (1 << offset)) {
+        sprite_addr |= 1 << 0;
+      }
+
       if(sprite_addr == 0) {
         sprite[i].x_counter--;
         continue;
@@ -104,6 +179,7 @@ sprite calc_sprite_pixel_addr(unsigned short *addr) {
         sprite[i].x_counter--;
       }
 
+      sprite_addr |= 0x3F10;
       *addr = sprite_addr;
       return sprite[i];
     }

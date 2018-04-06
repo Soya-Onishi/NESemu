@@ -3,4 +3,7 @@
 
 extern unsigned char memory[];
 
+unsigned char memory_read(unsigned short addr);
+void memory_write(unsigned short addr, unsigned char data);
+
 #endif

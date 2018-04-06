@@ -79,7 +79,7 @@ void exec_eor(unsigned char data) {
 void calc_immediate(void (*calc_exec)(unsigned char)) {
   unsigned char data;
   
-  data = memory[registers.pc + 1];
+  data = memory_read(registers.pc + 1);
   calc_exec(data);
 }
 
@@ -112,8 +112,8 @@ void calc_zeropage(void (*exec_calc)(unsigned char)) {
   unsigned char offset;
   unsigned char data;
 
-  offset = memory[registers.pc + 1];
-  data = memory[offset];
+  offset = memory_read(registers.pc + 1);
+  data = memory_read(offset);
 
   exec_calc(data);
 }
