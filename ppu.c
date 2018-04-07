@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "ppu.h"
 #include "ppu_rendering.h"
-
+#include "cpu.h"
 
 #define MAX_SCANLINE 262
 
@@ -120,9 +120,9 @@ unsigned short convert_address(unsigned short addr) {
   if(addr >= 0x2000 && addr <= 0x3EFF) {
     addr &= 0x2FFF;
 
-    if(/*vertical mirroring*/) {
+    if(nes_flag6 & 0x01) {
       addr &= 0xF4FF;
-    } else if(/*horizontal mirroring*/) {
+    } else if(!(nes_flag6 & 0x01)) {
       addr &= 0xF8FF;
     }
   } else if(addr >= 0x3F00 && addr <= 0x3FFF) {

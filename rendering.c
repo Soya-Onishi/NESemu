@@ -1,6 +1,7 @@
 #include "GL/glut.h"
 #include "ppu.h"
 #include "ppu_rendering.h"
+#include "cpu.h"
 
 void renew_registers();
 void address_to_color();
@@ -24,10 +25,10 @@ void rendering() {
     bg_pallet = bg_addr & 3;
     sprite_pallet = sprite_addr & 3;
 
-    if(~ppu_reg.mask & SPRITE_MASK) {
+    if((~ppu_reg.mask & SPRITE_MASK) && dots >= 1 && dots <= 8) {
       sprite_pallet = 0;
     }
-    if(~ppu_reg.mask & BG_MASK) {
+    if((~ppu_reg.mask & BG_MASK) && dots >= 1 && dots <= 8) {
       bg_pallet = 0;
     }
 
@@ -96,18 +97,7 @@ void address_to_color() {
       rendering_color[dots][i] = (int *)pallet_colors[color_addr];
     }
   } else if(dots == 240) {
-    //display rendering result by openGL
-    static int stdtime = 1000 / 60;
-    int time;
-
-    while(1) {
-      time = glutGet(GLUT_ELAPSED_TIME);
-      if(time >= stdtime) {
-        stdtime += 1000 / 60;
-        glutPostRedisplay();
-        return;
-      }
-    }
+    ready_for_drawing = 1;
   }
 }
 
@@ -190,10 +180,9 @@ unsigned short calc_bg_pixel_addr() {
 }
 
 rendering_sprite calc_sprite_pixel_addr(unsigned short *addr) {
-  unsigned short sprite_addr;
-  unsigned char fine_x = ppu_render_info.fine_x;
-  int i;
-  rendering_sprite std_sprite = {0xFF, 0xFF, 0xFF, 0xFF};
+  unsigned short sprite_addr = 0;
+  int i, return_offset = 7;
+  rendering_sprite std_sprite = {0x0, 0x0, 0x0, 0x0, 0};
 
   if((~ppu_reg.mask & SPRITE_MASK) && get_dots() < 9) {
     *addr = 0;
@@ -206,45 +195,26 @@ rendering_sprite calc_sprite_pixel_addr(unsigned short *addr) {
   }
 
   for(i = 0; i < 8; i++) {
-    if(sprite[i].x_counter <= 0 && sprite[i].x_counter > -8) {
-      int offset;
+    if(sprite[i].x_counter == 0) {
+      if(!sprite_addr) {
+        sprite_addr = sprite[i].sprite_low & 0x01;
+        sprite_addr |= (sprite[i].sprite_high & 0x01) << 1;
 
-      if(sprite[i].attribute & H_REV) {
-        offset = 7 + sprite[i].x_counter;
-      } else {
-        offset = sprite[i].x_counter;
+        sprite[i].sprite_low  = (sprite[i].sprite_low  >> 1) & 0x7F;
+        sprite[i].sprite_high = (sprite[i].sprite_high >> 1) & 0x7F;
+
+        return_offset = i;
       }
-
-      sprite_addr = (sprite[i].sprite_high & (1 << offset) << (1 - offset)) | (sprite[i].sprite_low & (1 << offset) << (0 - offset));
-      if(sprite[i].sprite_high & (1 << offset)) {
-        sprite_addr = 1 << 1;
-      } else {
-        sprite_addr = 0;
-      }
-
-      if(sprite[i].sprite_low & (1 << offset)) {
-        sprite_addr |= 1 << 0;
-      }
-
-      if(sprite_addr == 0) {
-        sprite[i].x_counter--;
-        continue;
-      }
-
-      sprite_addr |= ((sprite[i].attribute & SPRITE_PALLET) << 2);
-
-      for(; i < 8; i++) {
-        sprite[i].x_counter--;
-      }
-
-      sprite_addr |= 0x3F10;
-      *addr = sprite_addr;
-      return sprite[i];
+    } else {
+      sprite[i].x_counter--;
     }
-
-    sprite[i].x_counter--;
   }
 
-  *addr = 0;
-  return std_sprite;
+  *addr = sprite_addr;
+
+  if(sprite_addr) {
+    return sprite[return_offset];
+  } else {
+    return std_sprite;
+  }
 }

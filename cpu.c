@@ -1,11 +1,30 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include"GL/glut.h"
 #include"cpu_circuit.h"
 #include"ppu.h"
 #include"cpu.h"
 
+int ready_for_drawing = 0;
+
+unsigned char nes_flag6;
+
 void cpu() {
-  fetch_instruction();
+  if(ready_for_drawing) {
+    //display rendering result by openGL
+    static int stdtime = 1000 / 60;
+    int time;
+
+    time = glutGet(GLUT_ELAPSED_TIME);
+
+    if(time >= stdtime) {
+      stdtime += 1000 / 60;
+      glutPostRedisplay();
+      ready_for_drawing = 0;
+    }
+  } else {
+    fetch_instruction();
+  }
 }
 
 void init_cpu() {

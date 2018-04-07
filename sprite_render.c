@@ -7,6 +7,8 @@ void sprite_pre_render();
 void sprite_evaluation();
 void sprite_fetch(int dots);
 
+unsigned char bit_reverse(unsigned char data);
+
 void sprite_render() {
   int scanline = get_scanline();
 
@@ -117,14 +119,26 @@ void sprite_evaluation() {
 void sprite_fetch(int dots) {
   int internal_dots = (dots - 257) % 8;
   int offset = (dots - 257) / 8;
-  static unsigned short addr;
+  static unsigned short addr = 0;
+  unsigned char data = 0;
 
   switch(internal_dots) {
     case 5:
       //fetch low sprite tile byte
       if(ppu_reg.ctrl & SPRITE_SIZE) {
-        //TODO:8*16 mode
+        //8*16 mode
+        unsigned char v_offset;
         
+        addr = ((unsigned short)second_oam[offset][1] & 0xFE) << 4;
+        addr |= (unsigned short)(second_oam[offset][1] & 0x01) << 12;
+        v_offset = get_scanline() - second_oam[offset][0];
+
+        if(second_oam[offset][2] & V_REV) {
+          v_offset = 15 - v_offset;
+        }
+
+        addr |= ((v_offset & 0x8) << 1) | (v_offset & 0x7);
+
       } else {
         //8*8 mode
         addr = (((unsigned short)ppu_reg.ctrl & (1 << 3)) << 9) | ((unsigned short)second_oam[offset][1] << 4);
@@ -135,13 +149,28 @@ void sprite_fetch(int dots) {
         } else {
           //not vertical reverse
           addr += get_scanline() - second_oam[offset][0];
-        }  
-        sprite[offset].sprite_low = vram_read(addr);
+        }
       }
+
+      data = vram_read(addr);
+
+      if(second_oam[offset][2] & H_REV) {
+        data = bit_reverse(data);
+      }
+
+      sprite[offset].sprite_low = data;
+    
       break;
     case 7:
       //fetch high sprite tile byte
-      sprite[offset].sprite_high = vram_read(addr);
+
+      data = vram_read(addr + 8);
+
+      if(second_oam[offset][2] & H_REV) {
+        data = bit_reverse(data);
+      }
+
+      sprite[offset].sprite_high = data;
 
       if(offset == 0 && sprite_zero_exist) {
         sprite[offset].is_sprite_zero = 1;
@@ -153,4 +182,15 @@ void sprite_fetch(int dots) {
     default:
       break;
   }
+}
+
+unsigned char bit_reverse(unsigned char data) {
+  unsigned char tmp = (data << 4) & 0xF0;
+  data = tmp | ((data >> 4) & 0x0F);
+  tmp = (data << 2) & 0xCC;
+  data = tmp | ((data >> 2) & 0x33);
+  tmp = (data << 1) & 0xAA;
+  data = tmp | ((data >> 1) & 0x55);
+
+  return data;
 }
