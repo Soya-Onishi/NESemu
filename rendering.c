@@ -1,3 +1,4 @@
+#include "GL/glut.h"
 #include "ppu.h"
 #include "ppu_rendering.h"
 
@@ -96,8 +97,45 @@ void address_to_color() {
       rendering_color[dots][i] = (int *)pallet_colors[color_addr];
     }
   } else if(dots == 240) {
-    //TODO:display rendering result by openGL
+    //display rendering result by openGL
+    static int stdtime = 1000 / 60;
+    int time;
+
+    while(1) {
+      time = glutGet(GLUT_ELAPSED_TIME);
+      if(time >= stdtime) {
+        stdtime += 1000 / 60;
+        glutPostRedisplay();
+        return;
+      }
+    }
   }
+}
+
+void display() {
+  int x, y;
+  const int WIDTH = 256, HEIGHT = 240;
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glMatrixMode(GL_MODELVIEW);
+
+  glBegin(GL_POINTS);
+  for(y = 0; y < HEIGHT; y++) {
+    for(x = 0; x < WIDTH; x++) {
+      GLfloat red, blue, green;
+
+      red = (GLfloat)rendering_color[y][x][0] / 255.0;
+      green = (GLfloat)rendering_color[y][x][1] / 255.0;
+      blue = (GLfloat)rendering_color[y][x][2] / 255.0;
+      
+      glColor3f(red, green, blue);
+      glVertex2i(x, y);
+    }
+  }
+  glEnd();
+
+  glutSwapBuffers();
+  return;
 }
 
 void reload_shift_reg() {

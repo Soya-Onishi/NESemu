@@ -1,6 +1,7 @@
 #include"../cpu_circuit.h"
 #include"../memory.h"
 #include"../status_flag_manager.h"
+#include"../ppu.h"
 
 unsigned char exec_asl(unsigned char data);
 unsigned char exec_lsr(unsigned char data);
@@ -94,6 +95,7 @@ unsigned char exec_ror(unsigned char data) {
 
 
 void shift_accumulator(unsigned char (*exec_shift)(unsigned char)) {
+  ppu_cycle();
   registers.accumulator = exec_shift(registers.accumulator);
 }
 
@@ -122,8 +124,14 @@ void shift_zeropage(unsigned char (*exec_shift)(unsigned char)) {
   unsigned char addr;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   data = memory_read(addr);
+  ppu_cycle();
+
+  ppu_cycle();
   memory_write(addr, exec_shift(data));
+  ppu_cycle();
 }
 
 int asl_zeropage() {
@@ -151,10 +159,17 @@ void shift_zeropage_x(unsigned char (*exec_shift)(unsigned char)) {
   unsigned char data;
 
   addr = memory_read(registers.pc + 1);
-  addr += registers.index_x;
-  data = memory_read(addr);
+  ppu_cycle();
 
+  addr += registers.index_x;
+  ppu_cycle();
+
+  data = memory_read(addr);
+  ppu_cycle();
+
+  ppu_cycle();
   memory_write(addr, exec_shift(data));
+  ppu_cycle();
 }
 
 int asl_zeropage_x() {
@@ -182,10 +197,17 @@ void shift_absolute(unsigned char(*exec_shift)(unsigned char)) {
   unsigned char data;
 
   addr = memory_read(registers.pc + 1);
-  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
-  data = memory_read(addr);
+  ppu_cycle();
 
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  ppu_cycle();
+  
+  data = memory_read(addr);
+  ppu_cycle();
+
+  ppu_cycle();
   memory_write(addr, exec_shift(data));
+  ppu_cycle();
 }
 
 int asl_absolute() {
@@ -215,17 +237,26 @@ int shift_absolute_x(unsigned char(*exec_shift)(unsigned char)) {
   int additional_cycle = 0;
 
   before = addr_lower = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   addr_upper = memory_read(registers.pc + 2);
+  ppu_cycle();
 
   addr_lower += registers.index_x;
   if(addr_lower < before) {
     addr_upper++;
-    additional_cycle++;
+    //additional_cycle++;
+    ppu_cycle();
   }
 
   addr = ((unsigned short)addr_upper << 8) + addr_lower;
+
   data = memory_read(addr);
+  ppu_cycle();
+
+  ppu_cycle();
   memory_write(addr, exec_shift(data));
+  ppu_cycle();
 
   return additional_cycle;
 }

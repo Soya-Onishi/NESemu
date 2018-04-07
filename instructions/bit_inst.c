@@ -1,6 +1,7 @@
 #include"../cpu_circuit.h"
 #include"../memory.h"
 #include"../status_flag_manager.h"
+#include"../ppu.h"
 
 void exec_bit(unsigned char data);
 
@@ -23,7 +24,9 @@ int bit_zeropage() {
   unsigned char addr, data;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
   addr = memory_read(addr);
+  ppu_cycle();
 
   exec_bit(data);
 
@@ -35,9 +38,12 @@ int bit_absolute() {
   unsigned char data;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
   addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  ppu_cycle();
 
   data = memory_read(addr);
+  ppu_cycle();
   
   exec_bit(data);
 

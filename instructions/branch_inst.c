@@ -1,6 +1,7 @@
 #include"../cpu_circuit.h"
 #include"../memory.h"
 #include"../status_flag_manager.h"
+#include"../ppu.h"
 
 int exec_bcc();
 int exec_bcs();
@@ -52,14 +53,18 @@ int branch_relative(int (*exec_branch)()) {
   int additional_cycle = 0;
 
   offset = (char)memory_read(registers.pc + 1);
+  ppu_cycle();
+
   before = registers.pc + 2;
   
   if(exec_branch()) {
-    additional_cycle++;
+    //additional_cycle++;
+    ppu_cycle();
     after += before + offset;
 
     if((after & 0xf0) != (before & 0xf0)) {
-      additional_cycle++;
+      //additional_cycle++;
+      ppu_cycle();
     }
 
     registers.pc = after - 2;

@@ -1,6 +1,7 @@
 #include"../cpu_circuit.h"
 #include"../memory.h"
 #include"../status_flag_manager.h"
+#include"../ppu.h"
 
 void exec_lda(unsigned short addr);
 void exec_ldx(unsigned short addr);
@@ -48,6 +49,7 @@ void exec_sty(unsigned short addr) {
 }
 
 void transfer_immediate(void (*exec_trans)(unsigned short)) {
+  ppu_cycle();
   exec_trans((unsigned short)registers.pc + 1);
 }
 
@@ -67,7 +69,9 @@ int ldy_immediate() {
 }
 
 void transfer_zeropage(void (*exec_trans)(unsigned short)) {
+  ppu_cycle();
   exec_trans((unsigned short)memory_read(registers.pc + 1));
+  ppu_cycle();
 }
 
 int lda_zeropage() {
@@ -103,8 +107,12 @@ int sty_zeropage() {
 void transfer_zeropage_index(void (*exec_trans)(unsigned short), unsigned char index) {
   unsigned char addr;
 
+  ppu_cycle();
+  ppu_cycle();
   addr = memory_read(registers.pc + 1) + index;
+
   exec_trans((unsigned short)addr);
+  ppu_cycle();
 }
 
 int lda_zeropage_index() {
@@ -141,9 +149,13 @@ void transfer_absolute(void (*exec_trans)(unsigned short)) {
   unsigned short addr;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  ppu_cycle();
 
   exec_trans(addr);
+  ppu_cycle();
 }
 
 int lda_absolute() {
@@ -181,15 +193,20 @@ int transfer_absolute_index(void (*exec_trans)(unsigned short), unsigned char in
   int additional_cycle = 0;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
-  
+  ppu_cycle();
+
   before = addr;
   addr += index;
   if((before & 0xf0) != (addr & 0xf0)) {
-    additional_cycle++;
+    //additional_cycle++;
+    ppu_cycle();
   }
 
   exec_trans(addr);
+  ppu_cycle();
 
   return additional_cycle;
 }
@@ -223,10 +240,17 @@ void transfer_indirect_x(void (*exec_trans)(unsigned short)) {
   unsigned short exec_addr;
 
   addr = memory_read(registers.pc + 1) + registers.index_x;
-  exec_addr = (unsigned short)memory_read(addr) << 8;
-  addr++;
-  exec_addr |= memory_read(addr);
+  ppu_cycle();
+  ppu_cycle();
+
+  exec_addr = memory_read(addr);
+  ppu_cycle();
+
+  exec_addr |= (unsigned short)memory_read(addr + 1) << 8;
+  ppu_cycle();
+
   exec_trans(exec_addr);
+  ppu_cycle();
 }
 
 int lda_indirect_x() {
@@ -245,18 +269,25 @@ int transfer_indirect_y(void (*exec_trans)(unsigned short)) {
   int addtional_cycle = 0;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   exec_addr = (unsigned short)memory_read(addr) << 8;
+  ppu_cycle();
+
   addr++;
   exec_addr |= memory_read(addr);
+  ppu_cycle();
 
   before = exec_addr;
   exec_addr += registers.index_y;
 
   if((before & 0xf0) != (exec_addr & 0xf0)) {
-    addtional_cycle++;
+    //addtional_cycle++;
+    ppu_cycle();
   }
 
   exec_trans(exec_addr);
+  ppu_cycle();
 
   return addtional_cycle;
 }
@@ -271,6 +302,7 @@ int sta_indirect_y() {
 
 int tax_implied() {
   registers.index_x = registers.accumulator;
+  ppu_cycle();
   set_z_flag(registers.index_x);
   set_n_flag(registers.index_x);
   return 0;
@@ -278,6 +310,7 @@ int tax_implied() {
 
 int txa_implied() {
   registers.accumulator = registers.index_x;
+  ppu_cycle();
   set_z_flag(registers.accumulator);
   set_n_flag(registers.accumulator);
   return 0;
@@ -285,6 +318,7 @@ int txa_implied() {
 
 int tay_implied() {
   registers.index_y = registers.accumulator;
+  ppu_cycle();
   set_z_flag(registers.index_y);
   set_n_flag(registers.index_y);
   return 0;
@@ -292,6 +326,7 @@ int tay_implied() {
 
 int tya_implied() {
   registers.accumulator = registers.index_y;
+  ppu_cycle();
   set_z_flag(registers.accumulator);
   set_n_flag(registers.accumulator);
   return 0;
@@ -299,6 +334,7 @@ int tya_implied() {
 
 int tsx_implied() {
   registers.index_x = registers.stack;
+  ppu_cycle();
   set_z_flag(registers.index_x);
   set_n_flag(registers.index_x);
   return 0;
@@ -306,5 +342,6 @@ int tsx_implied() {
 
 int txs_implied() {
   registers.stack = registers.index_x;
+  ppu_cycle();
   return 0;
 }

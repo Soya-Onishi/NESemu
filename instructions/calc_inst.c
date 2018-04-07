@@ -1,6 +1,7 @@
 #include"../cpu_circuit.h"
 #include"../memory.h"
 #include"../status_flag_manager.h"
+#include"../ppu.h"
 
 void exec_adc(unsigned char data);
 void exec_sbc(unsigned char data);
@@ -113,7 +114,10 @@ void calc_zeropage(void (*exec_calc)(unsigned char)) {
   unsigned char data;
 
   offset = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   data = memory_read(offset);
+  ppu_cycle();
 
   exec_calc(data);
 }
@@ -148,8 +152,13 @@ void calc_zeropage_x(void (*exec_calc)(unsigned char)) {
   unsigned char data;
 
   offset = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   offset += registers.index_x;
+  ppu_cycle();
+
   data = memory_read(offset);
+  ppu_cycle();
 
   exec_calc(data);
 }
@@ -184,8 +193,13 @@ void calc_absolute(void (*exec_calc)(unsigned char)) {
   unsigned char data;
 
   offset = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   offset |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  ppu_cycle();
+
   data = memory_read(offset);
+  ppu_cycle();
 
   exec_calc(data);
 }
@@ -222,17 +236,22 @@ int calc_absolute_index(unsigned char index, void (*exec_calc)(unsigned char)) {
   int additional_cycle = 0;
 
   before = offset_lower = memory_read(registers.pc + 1);
+  ppu_cycle();
+  
   offset_upper = memory_read(registers.pc + 2);
+  ppu_cycle();
 
   offset_lower += index;
   if(offset_lower < before) {
-    additional_cycle = 1;
+    //additional_cycle = 1;
+    ppu_cycle();
     offset_upper++;
   }
 
   offset = ((unsigned short)offset_upper << 8) + offset_lower;
 
   data = memory_read(offset);
+  ppu_cycle();
 
   exec_calc(data);
 
@@ -285,12 +304,19 @@ void calc_indirect_x(void (*exec_calc)(unsigned char)) {
   unsigned char data;
 
   offset = memory_read(registers.pc + 1);
+  ppu_cycle();
 
   offset += registers.index_x;
+  ppu_cycle();
+
   addr = memory_read(offset);
+  ppu_cycle();
+
   addr |= (unsigned short)memory_read(offset + 1) << 8;
+  ppu_cycle();
 
   data = memory_read(addr);
+  ppu_cycle();
 
   exec_calc(data);
 }
@@ -328,18 +354,25 @@ int calc_indirect_y(void (*exec_calc)(unsigned char)) {
   int additional_cycle = 0;
 
   offset = memory_read(registers.pc + 1);
+  ppu_cycle();
 
   before = addr_lower = memory_read(offset);
+  ppu_cycle();
+
   addr_upper = memory_read(offset + 1);
+  ppu_cycle();
 
   addr_lower += registers.index_y;
   if(addr_lower < before) {
     addr_upper++;
-    additional_cycle++;
+    ppu_cycle();
+    //additional_cycle++;
   }
 
   addr = ((unsigned short)addr_upper << 8) + addr_lower;
   data = memory_read(addr);
+  ppu_cycle();
+  
   exec_calc(data);
 
   return additional_cycle;

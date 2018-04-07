@@ -47,7 +47,7 @@ int fetch_instruction() {
     return 7;
   }
 
-  opcode = memory[registers.pc];
+  opcode = memory_read(registers.pc);
   inst = instruction_set[opcode];
   additional_cycle = inst.instruction();
   registers.pc += inst.length;

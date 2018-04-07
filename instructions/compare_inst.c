@@ -1,6 +1,7 @@
 #include"../cpu_circuit.h"
 #include"../memory.h"
 #include"../status_flag_manager.h"
+#include"../ppu.h"
 
 void exec_compare(unsigned char a, unsigned char m);
 
@@ -29,14 +30,17 @@ void exec_compare(unsigned char a, unsigned char m) {
 }
 
 void exec_cmp(unsigned char data) {
+  ppu_cycle();
   exec_compare(registers.accumulator, data);
 }
 
 void exec_cpx(unsigned char data) {
+  ppu_cycle();
   exec_compare(registers.index_x, data);
 } 
 
 void exec_cpy(unsigned char data) {
+  ppu_cycle();
   exec_compare(registers.index_y, data);
 }
 
@@ -63,6 +67,8 @@ void compare_zeropage(void (*exec_comp)(unsigned char)) {
   unsigned char addr;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   exec_comp(memory_read(addr));
 }
 
@@ -85,7 +91,10 @@ void compare_absolute(void (*exec_comp)(unsigned char)) {
   unsigned short addr;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  ppu_cycle();
 
   exec_comp(memory_read(addr));
 }
@@ -109,6 +118,9 @@ int cmp_zeropage_x() {
   unsigned char addr;
 
   addr = memory_read(registers.pc + 1) + registers.index_x;
+  ppu_cycle();
+  ppu_cycle();
+
   exec_cmp(memory_read(addr));
 
   return 0;
@@ -119,12 +131,17 @@ int cmp_absolute_index(unsigned char index) {
   int additional_cycle = 0;
 
   addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  ppu_cycle();
+
   before = addr;
 
   addr += index;
   if((addr & 0xf0) != (before & 0xf0)) {
-    additional_cycle++;
+    //additional_cycle++;
+    ppu_cycle();
   }
 
   exec_cmp(memory_read(addr));
@@ -145,10 +162,15 @@ int cmp_indirect_x() {
   unsigned short data_addr;
 
   addr = memory_read(registers.pc + 1) + registers.index_x;
+  ppu_cycle();
+  ppu_cycle();
 
   data_addr |= (unsigned short)memory_read(addr) << 8;
   addr++;
+  ppu_cycle();
+
   data_addr = memory_read(addr);
+  ppu_cycle();
   
   exec_cmp(memory_read(data_addr));
 
@@ -161,14 +183,20 @@ int cmp_indirect_y() {
   int additional_cycle = 0;
 
   addr_addr = memory_read(registers.pc + 1);
+  ppu_cycle();
+
   addr = (unsigned short)memory_read(addr_addr) << 8;
   addr_addr++;
+  ppu_cycle();
+
   addr |= (unsigned short)memory_read(addr_addr);
+  ppu_cycle();
 
   before = addr;
   addr += registers.index_y;
   if((addr & 0xf0) != (before & 0xf0)) {
-    additional_cycle++;
+    //additional_cycle++;
+    ppu_cycle();
   }
 
   exec_cmp(memory_read(addr));
