@@ -61,6 +61,11 @@ void sprite_evaluation() {
     return;
   }
 
+  if(dots == 65) {
+    n = (ppu_reg.oamaddr >> 2) & 0x3F;
+    m = (ppu_reg.oamaddr & 3);
+  }
+
   if(dots % 2 == 0) {
     if(ppu_reg.ctrl & SPRITE_SIZE) {
       //renewing range for 8*16 mode
@@ -68,10 +73,11 @@ void sprite_evaluation() {
     }
 
     //step 1 in evaluation 
-    if(oam[n][0] <= scanline && oam[n][0] + range > scanline) {
+    if(oam[n][m] <= scanline && oam[n][m] + range > scanline) {
       int i;
 
-      if(n == 0) {
+      if(dots == 66) {
+        //first evaluation
         sprite_zero_exist = 1;
       }
 
@@ -130,12 +136,12 @@ void sprite_fetch(int dots) {
           //not vertical reverse
           addr += get_scanline() - second_oam[offset][0];
         }  
-        sprite[offset].sprite_low = vram[addr];
+        sprite[offset].sprite_low = vram_read(addr);
       }
       break;
     case 7:
       //fetch high sprite tile byte
-      sprite[offset].sprite_high = vram[addr + 8];
+      sprite[offset].sprite_high = vram_read(addr);
 
       if(offset == 0 && sprite_zero_exist) {
         sprite[offset].is_sprite_zero = 1;

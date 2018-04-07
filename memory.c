@@ -1,4 +1,18 @@
 #include "ppu.h"
+#include "ppu_rendering.h"
+
+unsigned char read_from_status();
+unsigned char read_from_oamdata();
+void write_to_oamdata(unsigned char data);
+void write_to_ppuaddr(unsigned char data);
+void write_to_scroll(unsigned char data);
+void write_to_ppudata(unsigned char data);
+unsigned char read_from_ppudata();
+
+void address_increment();
+void dma_exec(unsigned char std_addr);
+
+
 
 unsigned char memory[0x10000];
 
@@ -26,11 +40,11 @@ unsigned char memory_read(unsigned short addr) {
     case 4014:
       return ppu_data_bus; 
     case 2002:
-      return read_from_2002();
+      return read_from_status();
     case 2004:
       return read_from_oamdata();
     case 2007:
-      return read_from_2007();
+      return read_from_ppudata();
     default:
       return memory[addr];
   }
@@ -58,29 +72,29 @@ void memory_write(unsigned short addr, unsigned char data) {
       break;
     case 2004:
       //write sprite memory data
-      *(oam + ppu_reg.oamaddr) = data;
+      oam[(ppu_reg.oamaddr >> 2) & 0x3F][ppu_reg.oamaddr & 3] = data;
       break;
     case 2005:
       //write scroll offset
-      write_to_2005(data);
+      write_to_scroll(data);
       break;
     case 2006:
       //write accessing ppu memory address
-      write_to_2006(data);
+      write_to_ppuaddr(data);
       break;
     case 2007:
-      write_to_2007(data);
+      write_to_ppudata(data);
       break;
     case 4014:
       //DMA is occured
-      dma_exec();
+      dma_exec(data);
     default:
       memory[addr] = data;
       break;
   }
 }
 
-unsigned char read_from_2002() {
+unsigned char read_from_status() {
   unsigned char status = ppu_reg.status;
 
   ppu_render_info.toggle = 0;
@@ -91,25 +105,38 @@ unsigned char read_from_2002() {
 }
 
 unsigned char read_from_oamdata() {
-  ppu_data_bus = *(oam + ppu_reg.oamaddr);
+  int scanline = get_scanline();
+  int upper, lower;
+
+  upper = (ppu_reg.oamaddr >> 2) & 0x3F;
+  lower = ppu_reg.oamaddr & 3;
+
+  ppu_data_bus = oam[upper][lower];
 
   if(!(scanline >= 240 && scanline <= 260) && !(ppu_reg.mask & (SPRITE_ENABLE | BG_ENABLE))) {
     ppu_reg.oamaddr++;
   }
 
-  return *(oam + ppu_reg.oamaddr);
+  return oam[upper][lower];
 }
 
-unsigned char write_to_oamdata(unsigned char data) {
+void write_to_oamdata(unsigned char data) {
+  int scanline = get_scanline();
+  int upper, lower;
+
   if((ppu_reg.mask & (SPRITE_ENABLE | BG_ENABLE)) && ((scanline >= 0 && scanline <= 239) || scanline == -1 || scanline == 261)) {
     ppu_reg.oamaddr += 0x04;
   } else {
-    *(oam + ppu_reg.oamaddr) = data;
+    upper = (ppu_reg.oamaddr >> 2) & 0x3F;
+    lower = ppu_reg.oamaddr & 3;
+
+    oam[upper][lower] = data;
+
     ppu_reg.oamaddr++;
   }
 }
 
-void write_to_2006(unsigned char data) {
+void write_to_ppuaddr(unsigned char data) {
   if(ppu_render_info.toggle) {
     //write to lower bits
     ppu_render_info.t = (ppu_render_info.t & 0xFF00) | data;
@@ -122,7 +149,7 @@ void write_to_2006(unsigned char data) {
   ppu_render_info.toggle ^= 1;
 }
 
-void write_to_2005(unsigned char data) {
+void write_to_scroll(unsigned char data) {
   if(ppu_render_info.toggle) {
     //write vertical scroll
     unsigned short fine_y, coarse_y;
@@ -143,20 +170,20 @@ void write_to_2005(unsigned char data) {
     ppu_render_info.fine_x = fine_x; 
   }
 
-  ppu_render_info ^= 1;
+  ppu_render_info.toggle ^= 1;
 }
 
-void write_to_2007(unsigned char data) {
-  vram[ppu_render_info.v] = data;
+void write_to_ppudata(unsigned char data) {
+  vram_write(ppu_render_info.v, data);
   address_increment();
 }
 
-unsigned char read_from_2007() {
+unsigned char read_from_ppudata() {
   static unsigned char data_buffer = 0;
   unsigned char return_data;
 
   return_data = data_buffer;
-  data_buffer = vram[ppu_render_info.v];
+  data_buffer = vram_read(ppu_render_info.v);
   ppu_data_bus = return_data;
 
   address_increment();
@@ -174,19 +201,30 @@ void address_increment() {
 
 void dma_exec(unsigned char std_addr) {
   unsigned short addr = (unsigned short)std_addr << 8;
-  unsigned char i, j = 0;
+  unsigned char i;
+  int upper, lower;
 
   //dummy cycle
+  ppu_cycle();
   if(get_frame() % 2 == 1) {
     //dummy cycle
+    ppu_cycle();
   }
 
   i = ppu_reg.oamaddr;
   do {
-    unsigned char data = *(oam + i);
-    *(oam + i) = memory[addr];
-    memory[addr] = *(oam + i);
+    unsigned char data;
 
+    upper = i >> 2;
+    lower = i & 3;
+
+    data = oam[upper][lower];
+    oam[upper][lower] = memory_read(addr);
+    ppu_cycle();
+
+    memory_write(addr, oam[upper][lower]);
+    ppu_cycle();
+    
     i++;
     addr++;
   }while(i == ppu_reg.oamaddr);

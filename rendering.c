@@ -87,8 +87,7 @@ void address_to_color() {
     for(i = 0; i < 256; i++) {
       unsigned char color_addr;
       
-      color_addr = vram[rendering_addrs[dots][i]];
-      
+      color_addr = vram_read(rendering_addrs[dots][i]);      
       //convert to grayscale color address, if grayscale mode is enable
       if(ppu_reg.mask & GRAYSCALE) {
         color_addr &= 0x30;

@@ -6,6 +6,13 @@
 
 #define MAX_SCANLINE 262
 
+void init_display_color();
+unsigned short convert_address(unsigned short addr);
+void init_nametable();
+
+void vram_write(unsigned short addr, unsigned char data);
+unsigned char vram_read(unsigned short addr);
+
 ppu_registers ppu_reg;
 ppu_rendering_reg ppu_render_info;
 rendering_sprite sprite[8];
@@ -58,4 +65,77 @@ void ppu_cycle() {
     now_cycle += 1.0;
   }
   */
+}
+
+void init_ppu() {
+  ppu_reg.ctrl = 0;
+  ppu_reg.mask = 0;
+  ppu_reg.status = 0;
+  ppu_reg.oamaddr = 0;
+  ppu_render_info.toggle = 0;
+  ppu_reg.scroll = 0;
+  ppu_reg.ppuaddr = 0;
+  ppu_reg.oamdata = 0;
+
+  init_display_color();
+  init_nametable();
+}
+
+void reset_ppu() {
+  ppu_reg.ctrl = 0;
+  ppu_reg.mask = 0;
+  ppu_reg.status &= 0x80;
+
+  //ppu_reg.oamaddr is unchanged
+  
+  ppu_render_info.toggle = 0;
+  ppu_reg.scroll = 0;
+  ppu_reg.ppuaddr = 0;
+  ppu_reg.oamdata = 0;
+
+  init_display_color();
+}
+
+void init_display_color() {
+  int x, y;
+
+  for(y = 0; y < 240; y++) {
+    for(x = 0; x < 256; x++) {
+      rendering_color[y][x] = (int*)pallet_color[0x39];
+    }
+  }
+}
+
+void vram_write(unsigned short addr, unsigned char data) {
+  addr = convert_address(addr);
+  vram[addr] = data;
+}
+
+unsigned char vram_read(unsigned short addr) {
+  addr = convert_address(addr);
+  return vram[addr];
+}
+
+unsigned short convert_address(unsigned short addr) {
+  if(addr >= 0x2000 && addr <= 0x3EFF) {
+    addr &= 0x2FFF;
+
+    if(/*vertical mirroring*/) {
+      addr &= 0xF4FF;
+    } else if(/*horizontal mirroring*/) {
+      addr &= 0xF8FF;
+    }
+  } else if(addr >= 0x3F00 && addr <= 0x3FFF) {
+    addr &= 0xFF1F;
+  }
+
+  return addr;
+}
+
+void init_nametable() {
+  unsigned short addr;
+
+  for(addr = 0x2000; addr < 0x2FFF; addr++) {
+    vram_write(addr, 0xFF);
+  }
 }

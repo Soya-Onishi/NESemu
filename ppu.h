@@ -74,4 +74,10 @@ extern unsigned char pallet_colors[0x40][3];
 
 void ppu_cycle();
 
+void init_ppu();
+void reset_ppu();
+
+void vram_write(unsigned short addr, unsigned char data);
+unsigned char vram_read(unsigned short addr);
+
 #endif

@@ -80,7 +80,7 @@ void bg_tile_fetch(int dots) {
       case 1:
         //read byte from nametable
         addr = 0x2000 | (ppu_render_info.v & 0x0FFF);
-        nt_latch = vram[addr];
+        nt_latch = vram_read(addr);
         break;
       case 3:
         //read byte from attribute table
@@ -88,17 +88,17 @@ void bg_tile_fetch(int dots) {
         x = (ppu_render_info.fine_x >> 1) & 1;
         y = (ppu_render_info.v >> 12) & 2;
         
-        at_latch = vram[addr] >> (6 - ((x | y) << 1));
+        at_latch = vram_read(addr) >> (6 - ((x | y) << 1));
         break;
       case 5:
         //read low bg tile byte
         addr = ((unsigned short)ppu_reg.ctrl & (1 << 4)) << 8 | (nt_latch << 4);
-        bg_latch[0] = vram[addr]; 
+        bg_latch[0] = vram_read(addr); 
         break;
       case 7:
         //read high bg tile byte and increment horizontal or vertical of v
         addr = ((unsigned short)ppu_reg.ctrl & (1 << 4)) << 8 | (nt_latch << 4);
-        bg_latch[1] = vram[addr + 8];
+        bg_latch[1] = vram_read(addr + 8);
 
         if(dots == 256) {
           //increment vertical of v

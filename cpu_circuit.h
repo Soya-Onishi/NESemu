@@ -9,8 +9,8 @@ typedef enum {
   STATUS_N = 1 << 7,
   STATUS_V = 1 << 6,
   STATUS_B = 1 << 4,
-  STATUS_D = 1 << 2,
-  STATUS_I = 1 << 3,
+  STATUS_D = 1 << 3,
+  STATUS_I = 1 << 2,
   STATUS_Z = 1 << 1,
   STATUS_C = 1 << 0
 }status_flags;

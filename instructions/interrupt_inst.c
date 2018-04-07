@@ -19,6 +19,9 @@ int reset_implied() {
   unsigned short new_pc;
 
   registers.status |= STATUS_I;
+  registers.stack -= 3;
+  reset_ppu();
+  
   ppu_cycle();
 
   ppu_cycle();

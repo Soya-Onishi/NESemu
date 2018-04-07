@@ -4,6 +4,7 @@
 #include"instruction.h"
 #include"cpu_circuit.h"
 #include"instructions/interrupt_inst.h"
+#include"ppu.h"
 
 typedef enum {
   INTERRUPT_RESET_UPPER = 0xfffd,
@@ -33,21 +34,26 @@ int fetch_instruction() {
   int additional_cycle;
 
   if(intr_flags.reset) {
+    ppu_cycle();
     reset_implied();
     return 6;
   }
 
   if(intr_flags.nmi) {
+    ppu_cycle();
     nmi_implied();
     return 7;
   }
 
   if(intr_flags.irq) {
+    ppu_cycle();
     irq_implied();
     return 7;
   }
 
   opcode = memory_read(registers.pc);
+  ppu_cycle();
+  
   inst = instruction_set[opcode];
   additional_cycle = inst.instruction();
   registers.pc += inst.length;
