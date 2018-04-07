@@ -41,7 +41,7 @@ void exec_cpy(unsigned char data) {
 }
 
 void compare_immediate(void (*exec_comp)(unsigned char)) {
-  exec_comp(memory[registers.pc + 1]);
+  exec_comp(memory_read(registers.pc + 1));
 }
 
 int cmp_immediate() {
@@ -62,8 +62,8 @@ int cpy_immediate() {
 void compare_zeropage(void (*exec_comp)(unsigned char)) {
   unsigned char addr;
 
-  addr = memory[registers.pc + 1];
-  exec_comp(memory[addr]);
+  addr = memory_read(registers.pc + 1);
+  exec_comp(memory_read(addr));
 }
 
 int cmp_zeropage() {
@@ -84,10 +84,10 @@ int cpy_zeropage() {
 void compare_absolute(void (*exec_comp)(unsigned char)) {
   unsigned short addr;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
 
-  exec_comp(memory[addr]);
+  exec_comp(memory_read(addr));
 }
 
 int cmp_absolute() {
@@ -108,8 +108,8 @@ int cpy_absolute() {
 int cmp_zeropage_x() {
   unsigned char addr;
 
-  addr = memory[registers.pc] + registers.index_x;
-  exec_cmp(memory[addr]);
+  addr = memory_read(registers.pc + 1) + registers.index_x;
+  exec_cmp(memory_read(addr));
 
   return 0;
 }
@@ -118,8 +118,8 @@ int cmp_absolute_index(unsigned char index) {
   unsigned short addr, before;
   int additional_cycle = 0;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
   before = addr;
 
   addr += index;
@@ -127,7 +127,7 @@ int cmp_absolute_index(unsigned char index) {
     additional_cycle++;
   }
 
-  exec_cmp(memory[addr]);
+  exec_cmp(memory_read(addr));
 
   return additional_cycle;
 }
@@ -144,13 +144,13 @@ int cmp_indirect_x() {
   unsigned char addr;
   unsigned short data_addr;
 
-  addr = memory[registers.pc + 1] + registers.index_x;
+  addr = memory_read(registers.pc + 1) + registers.index_x;
 
-  data_addr |= (unsigned short)memory[addr] << 8;
+  data_addr |= (unsigned short)memory_read(addr) << 8;
   addr++;
-  data_addr = memory[addr];
+  data_addr = memory_read(addr);
   
-  exec_cmp(memory[data_addr]);
+  exec_cmp(memory_read(data_addr));
 
   return 0;
 }
@@ -160,10 +160,10 @@ int cmp_indirect_y() {
   unsigned short addr, before;
   int additional_cycle = 0;
 
-  addr_addr = memory[registers.pc + 1];
-  addr = (unsigned short)memory[addr_addr] << 8;
+  addr_addr = memory_read(registers.pc + 1);
+  addr = (unsigned short)memory_read(addr_addr) << 8;
   addr_addr++;
-  addr |= (unsigned short)memory[addr_addr];
+  addr |= (unsigned short)memory_read(addr_addr);
 
   before = addr;
   addr += registers.index_y;
@@ -171,7 +171,7 @@ int cmp_indirect_y() {
     additional_cycle++;
   }
 
-  exec_cmp(memory[addr]);
+  exec_cmp(memory_read(addr));
 
   return additional_cycle;
 }

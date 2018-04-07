@@ -121,9 +121,9 @@ void shift_zeropage(unsigned char (*exec_shift)(unsigned char)) {
   unsigned char data;
   unsigned char addr;
 
-  addr = memory[registers.pc + 1];
-  data = memory[addr];
-  memory[addr] = exec_shift(data);
+  addr = memory_read(registers.pc + 1);
+  data = memory_read(addr);
+  memory_write(addr, exec_shift(data));
 }
 
 int asl_zeropage() {
@@ -150,11 +150,11 @@ void shift_zeropage_x(unsigned char (*exec_shift)(unsigned char)) {
   unsigned char addr;
   unsigned char data;
 
-  addr = memory[registers.pc + 1];
+  addr = memory_read(registers.pc + 1);
   addr += registers.index_x;
-  data = memory[addr];
+  data = memory_read(addr);
 
-  memory[addr] = exec_shift(data);
+  memory_write(addr, exec_shift(data));
 }
 
 int asl_zeropage_x() {
@@ -181,11 +181,11 @@ void shift_absolute(unsigned char(*exec_shift)(unsigned char)) {
   unsigned short addr;
   unsigned char data;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
-  data = memory[addr];
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  data = memory_read(addr);
 
-  memory[addr] = exec_shift(data);
+  memory_write(addr, exec_shift(data));
 }
 
 int asl_absolute() {
@@ -214,8 +214,8 @@ int shift_absolute_x(unsigned char(*exec_shift)(unsigned char)) {
   unsigned char data;
   int additional_cycle = 0;
 
-  before = addr_lower = memory[registers.pc + 1];
-  addr_upper = memory[registers.pc + 2];
+  before = addr_lower = memory_read(registers.pc + 1);
+  addr_upper = memory_read(registers.pc + 2);
 
   addr_lower += registers.index_x;
   if(addr_lower < before) {
@@ -224,8 +224,8 @@ int shift_absolute_x(unsigned char(*exec_shift)(unsigned char)) {
   }
 
   addr = ((unsigned short)addr_upper << 8) + addr_lower;
-  data = memory[addr];
-  memory[addr] = exec_shift(data);
+  data = memory_read(addr);
+  memory_write(addr, exec_shift(data));
 
   return additional_cycle;
 }

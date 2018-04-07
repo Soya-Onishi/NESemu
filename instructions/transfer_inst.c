@@ -18,33 +18,33 @@ void transfer_indirect_x(void (*exec_trans)(unsigned short));
 int transfer_indirect_y(void (*exec_trans)(unsigned short));
 
 void exec_lda(unsigned short addr) {
-  registers.accumulator = memory[addr];
+  registers.accumulator = memory_read(addr);
   set_z_flag(registers.accumulator);
   set_n_flag(registers.accumulator);
 }
 
 void exec_ldx(unsigned short addr) {
-  registers.index_x = memory[addr];
+  registers.index_x = memory_read(addr);
   set_z_flag(registers.index_x);
   set_n_flag(registers.index_x);
 }
 
 void exec_ldy(unsigned short addr) {
-  registers.index_y = memory[addr];
+  registers.index_y = memory_read(addr);
   set_z_flag(registers.index_y);
   set_n_flag(registers.index_y);
 }
 
 void exec_sta(unsigned short addr) {
-  memory[addr] = registers.accumulator;
+  memory_write(addr, registers.accumulator);
 }
 
 void exec_stx(unsigned short addr) {
-  memory[addr] = registers.index_x;
+  memory_write(addr, registers.index_x);
 }
 
 void exec_sty(unsigned short addr) {
-  memory[addr] = registers.index_y;
+  memory_write(addr, registers.index_y);
 }
 
 void transfer_immediate(void (*exec_trans)(unsigned short)) {
@@ -67,7 +67,7 @@ int ldy_immediate() {
 }
 
 void transfer_zeropage(void (*exec_trans)(unsigned short)) {
-  exec_trans((unsigned short)memory[registers.pc + 1]);
+  exec_trans((unsigned short)memory_read(registers.pc + 1));
 }
 
 int lda_zeropage() {
@@ -103,7 +103,7 @@ int sty_zeropage() {
 void transfer_zeropage_index(void (*exec_trans)(unsigned short), unsigned char index) {
   unsigned char addr;
 
-  addr = memory[registers.pc + 1] + index;
+  addr = memory_read(registers.pc + 1) + index;
   exec_trans((unsigned short)addr);
 }
 
@@ -140,8 +140,8 @@ int sty_zeropage_index() {
 void transfer_absolute(void (*exec_trans)(unsigned short)) {
   unsigned short addr;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
 
   exec_trans(addr);
 }
@@ -180,8 +180,8 @@ int transfer_absolute_index(void (*exec_trans)(unsigned short), unsigned char in
   unsigned short addr, before;
   int additional_cycle = 0;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
   
   before = addr;
   addr += index;
@@ -222,10 +222,10 @@ void transfer_indirect_x(void (*exec_trans)(unsigned short)) {
   unsigned char addr;
   unsigned short exec_addr;
 
-  addr = memory[registers.pc + 1] + registers.index_x;
-  exec_addr = (unsigned short)memory[addr] << 8;
+  addr = memory_read(registers.pc + 1) + registers.index_x;
+  exec_addr = (unsigned short)memory_read(addr) << 8;
   addr++;
-  exec_addr |= memory[addr];
+  exec_addr |= memory_read(addr);
   exec_trans(exec_addr);
 }
 
@@ -244,10 +244,10 @@ int transfer_indirect_y(void (*exec_trans)(unsigned short)) {
   unsigned short exec_addr, before;
   int addtional_cycle = 0;
 
-  addr = memory[registers.pc + 1];
-  exec_addr = (unsigned short)memory[addr] << 8;
+  addr = memory_read(registers.pc + 1);
+  exec_addr = (unsigned short)memory_read(addr) << 8;
   addr++;
-  exec_addr |= memory[addr];
+  exec_addr |= memory_read(addr);
 
   before = exec_addr;
   exec_addr += registers.index_y;

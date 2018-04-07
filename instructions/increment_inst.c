@@ -22,8 +22,8 @@ unsigned char exec_decrement(unsigned char data) {
 int inc_dec_zeropage(unsigned char(*exec_inc_dec)(unsigned char)) {
   unsigned char addr;
 
-  addr = memory[registers.pc + 1];
-  memory[addr] = exec_inc_dec(memory[addr]);
+  addr = memory_read(registers.pc + 1);
+  memory_write(addr, exec_inc_dec(memory_read(addr)));
   return 0;
 }
 
@@ -38,8 +38,8 @@ int dec_zeropage() {
 int inc_dec_zeropage_x(unsigned char(*exec_inc_dec)(unsigned char)) {
   unsigned char addr;
 
-  addr = memory[registers.pc + 1] + registers.index_x;
-  memory[addr] = exec_inc_dec(memory[addr]);
+  addr = memory_read(registers.pc + 1) + registers.index_x;
+  memory_write(addr, exec_inc_dec(memory_read(addr)));
   return 0;
 }
 
@@ -54,10 +54,10 @@ int dec_zeropage_x() {
 int inc_dec_absolute(unsigned char(*exec_inc_dec)(unsigned char)) {
   unsigned short addr;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
 
-  memory[addr] = exec_inc_dec(memory[addr]);
+  memory_write(addr, exec_inc_dec(memory_read(addr)));
   return 0;
 }
 
@@ -73,8 +73,8 @@ int inc_dec_absolute_x(unsigned char(*exec_inc_dec)(unsigned char)) {
   unsigned short addr, before;
   int additional_cycle = 0;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
 
   before = addr;
   addr += registers.index_x;
@@ -82,7 +82,7 @@ int inc_dec_absolute_x(unsigned char(*exec_inc_dec)(unsigned char)) {
     additional_cycle++;
   }
 
-  memory[addr] = exec_inc_dec(memory[addr]);
+  memory_write(addr, exec_inc_dec(memory_read(addr)));
 
   return additional_cycle;
 }

@@ -147,9 +147,9 @@ void calc_zeropage_x(void (*exec_calc)(unsigned char)) {
   unsigned char offset;
   unsigned char data;
 
-  offset = memory[registers.pc + 1];
+  offset = memory_read(registers.pc + 1);
   offset += registers.index_x;
-  data = memory[offset];
+  data = memory_read(offset);
 
   exec_calc(data);
 }
@@ -183,9 +183,9 @@ void calc_absolute(void (*exec_calc)(unsigned char)) {
   unsigned short offset;
   unsigned char data;
 
-  offset = memory[registers.pc + 1];
-  offset |= (unsigned short)memory[registers.pc + 2] << 8;
-  data = memory[offset];
+  offset = memory_read(registers.pc + 1);
+  offset |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  data = memory_read(offset);
 
   exec_calc(data);
 }
@@ -221,8 +221,8 @@ int calc_absolute_index(unsigned char index, void (*exec_calc)(unsigned char)) {
   unsigned char data;
   int additional_cycle = 0;
 
-  before = offset_lower = memory[registers.pc + 1];
-  offset_upper = memory[registers.pc + 2];
+  before = offset_lower = memory_read(registers.pc + 1);
+  offset_upper = memory_read(registers.pc + 2);
 
   offset_lower += index;
   if(offset_lower < before) {
@@ -231,7 +231,9 @@ int calc_absolute_index(unsigned char index, void (*exec_calc)(unsigned char)) {
   }
 
   offset = ((unsigned short)offset_upper << 8) + offset_lower;
-  data = memory[offset];
+
+  data = memory_read(offset);
+
   exec_calc(data);
 
   return additional_cycle;
@@ -282,13 +284,14 @@ void calc_indirect_x(void (*exec_calc)(unsigned char)) {
   unsigned short addr;
   unsigned char data;
 
-  offset = memory[registers.pc + 1];
+  offset = memory_read(registers.pc + 1);
 
   offset += registers.index_x;
-  addr = memory[offset];
-  addr |= (unsigned short)memory[offset + 1] << 8;
+  addr = memory_read(offset);
+  addr |= (unsigned short)memory_read(offset + 1) << 8;
 
-  data = memory[addr];
+  data = memory_read(addr);
+
   exec_calc(data);
 }
 
@@ -324,10 +327,10 @@ int calc_indirect_y(void (*exec_calc)(unsigned char)) {
   unsigned char data;
   int additional_cycle = 0;
 
-  offset = memory[registers.pc + 1];
+  offset = memory_read(registers.pc + 1);
 
-  before = addr_lower = memory[offset];
-  addr_upper = memory[offset + 1];
+  before = addr_lower = memory_read(offset);
+  addr_upper = memory_read(offset + 1);
 
   addr_lower += registers.index_y;
   if(addr_lower < before) {
@@ -336,7 +339,7 @@ int calc_indirect_y(void (*exec_calc)(unsigned char)) {
   }
 
   addr = ((unsigned short)addr_upper << 8) + addr_lower;
-  data = memory[addr];
+  data = memory_read(addr);
   exec_calc(data);
 
   return additional_cycle;

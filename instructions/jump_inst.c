@@ -5,8 +5,8 @@
 int jmp_absolute() {
   unsigned short addr;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
 
   registers.pc = addr - 3; // 3 is byte length of jmp absolute instruction
 
@@ -16,9 +16,9 @@ int jmp_absolute() {
 int jmp_indirect() {
   unsigned short addr;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
-  registers.pc = memory[addr] - 3; // 3 is byte length of jmp indirect instruction
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
+  registers.pc = memory_read(addr) - 3; // 3 is byte length of jmp indirect instruction
 
   return 0;
 }
@@ -27,12 +27,12 @@ int jsr_absolute() {
   unsigned short addr;
   unsigned short next_inst_addr;
 
-  addr = memory[registers.pc + 1];
-  addr |= (unsigned short)memory[registers.pc + 2] << 8;
+  addr = memory_read(registers.pc + 1);
+  addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
 
   next_inst_addr = registers.pc + 2;
-  memory[registers.stack--] = (unsigned char)(next_inst_addr >> 8);
-  memory[registers.stack--] = (unsigned char)next_inst_addr;
+  memory_write(registers.stack--, (unsigned char)(next_inst_addr >> 8));
+  memory_write(registers.stack--, (unsigned char)next_inst_addr);
 
   registers.pc = addr - 3;  // 3 is byte length of jsr absolute instruction
 
@@ -42,8 +42,8 @@ int jsr_absolute() {
 int rts_implied() {
   unsigned short addr;
 
-  addr = memory[++registers.stack];
-  addr |= (unsigned short)memory[++registers.stack] << 8;
+  addr = memory_read(++registers.stack);
+  addr |= (unsigned short)memory_read(++registers.stack) << 8;
   addr++;
   
   registers.pc = addr - 1; // 1 is byte length of rts implied instruction
