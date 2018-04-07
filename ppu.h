@@ -9,7 +9,7 @@
 #define BG_ENABLE (1 << 3)
 #define SPRITE_MASK (1 << 2)
 #define BG_MASK (1 << 1)
-#define DISPLAY_TYPE (1 << 0)
+#define GRAYSCALE (1 << 0)
 
 #define START_VBLANK (1 << 7)
 #define SPRITE_HIT (1 << 6)
@@ -60,7 +60,6 @@ extern unsigned char vram[];
 extern unsigned char nt_latch;
 extern unsigned char at_latch;
 extern unsigned char bg_latch[2];
-extern unsigned char attribute_latch;
 
 extern unsigned short bg_pattern_reg[2];
 extern unsigned short bg_attr_reg[2];
@@ -72,3 +71,7 @@ extern unsigned char second_oam[8][4];
 extern unsigned short rendering_addrs[240][256];
 extern int *rendering_color[240][256];
 extern unsigned char pallet_colors[0x40][3];
+
+void ppu_cycle();
+
+#endif

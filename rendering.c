@@ -1,6 +1,13 @@
 #include "ppu.h"
 #include "ppu_rendering.h"
 
+void renew_registers();
+void address_to_color();
+void reload_shift_reg();
+unsigned short calc_bg_pixel_addr();
+rendering_sprite calc_sprite_pixel_addr(unsigned short *addr);
+
+
 void rendering() {
   int scanline = get_scanline();
   int dots = get_dots();
@@ -80,7 +87,13 @@ void address_to_color() {
       unsigned char color_addr;
       
       color_addr = vram[rendering_addrs[dots][i]];
-      rendering_color[dots][i] = pallet_colors[color_addr];
+      
+      //convert to grayscale color address, if grayscale mode is enable
+      if(ppu_reg.mask & GRAYSCALE) {
+        color_addr &= 0x30;
+      }
+
+      rendering_color[dots][i] = (int *)pallet_colors[color_addr];
     }
   } else if(dots == 240) {
     //TODO:display rendering result by openGL
@@ -92,13 +105,21 @@ void reload_shift_reg() {
 
   for(i = 0; i < 2; i++) {
     bg_pattern_reg[i] = (bg_pattern_reg[i] & 0x0F) | ((unsigned short)bg_latch[i] << 8);
-    bg_attr_reg[i] = (bg_attr_reg[i] & 0x0F) | ((unsigned short)attribute_nexttile << 8);
+    bg_attr_reg[i] = (bg_attr_reg[i] & 0x0F);
+    
+    //at_latch       : bit0 = 0 bit1 = 1
+    //bg_attr_reg[0] : 0000 0000 1111 1111 => 0000 0000 1111 1111
+    //bg_attr_reg[1] : 0000 0000 0000 0000 => 1111 1111 0000 0000
+    if(at_latch & (1 << i)) {
+      bg_attr_reg[i] |= 0xFF00;
+    }
   }
 }
 
 unsigned short calc_bg_pixel_addr() {
   unsigned short bg_addr;
   unsigned char fine_x = ppu_render_info.fine_x;
+  int dots = get_dots();
 
   if((~ppu_reg.mask & BG_MASK) && dots < 9) {
     return 0;
@@ -108,13 +129,13 @@ unsigned short calc_bg_pixel_addr() {
     return 0;
   }
 
-  if(attribute_reg[0] & (1 << fine_x)) {
+  if(bg_attr_reg[0] & (1 << fine_x)) {
     bg_addr = 1 << 2;
   } else {
     bg_addr = 0;
   }
 
-  if(attribute_reg[1] & (1 << fine_x)) {
+  if(bg_attr_reg[1] & (1 << fine_x)) {
     bg_addr |= 1 << 3;
   }
 

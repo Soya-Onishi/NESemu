@@ -1,6 +1,12 @@
 #include "ppu.h"
 #include "ppu_rendering.h"
 
+void sprite_visible();
+void sprite_pre_render();
+
+void sprite_evaluation();
+void sprite_fetch(int dots);
+
 void sprite_render() {
   int scanline = get_scanline();
 
@@ -18,7 +24,7 @@ void sprite_visible() {
 
   if(dots >= 1 && dots <= 64) {
     //clear secondary oam
-    *(second_oam + (dots - 1)) = 0xFF;
+    second_oam[dots >> 2][dots & 3] = 0xFF;
   } else if(dots >= 65  && dots <= 256) {
     sprite_evaluation();
   } else if(dots >= 257 && dots <= 320) {
@@ -42,11 +48,21 @@ void sprite_evaluation() {
   static int n = 0;
   static int m = 0;
   static int offset = 0;
+  static int writing_disable = 0;
   int range = 8;
   int scanline = get_scanline();
+  int dots = get_dots();
+
+  if(writing_disable) {
+    if(dots == 256) {
+      writing_disable = 0;
+    }
+
+    return;
+  }
 
   if(dots % 2 == 0) {
-    if(ppu_reg.v & SPRITE_SIZE) {
+    if(ppu_reg.ctrl & SPRITE_SIZE) {
       //renewing range for 8*16 mode
       range = 16;
     }
@@ -96,14 +112,12 @@ void sprite_fetch(int dots) {
   int internal_dots = (dots - 257) % 8;
   int offset = (dots - 257) / 8;
   static unsigned short addr;
-  const unsigned char V_REV = (1 << 7);
-  const unsigned char SPRITE_SIZE = (1 << 5);
 
   switch(internal_dots) {
     case 5:
       //fetch low sprite tile byte
       if(ppu_reg.ctrl & SPRITE_SIZE) {
-        //8*16 mode
+        //TODO:8*16 mode
         
       } else {
         //8*8 mode

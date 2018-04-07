@@ -3,6 +3,8 @@
 
 int get_dots();
 int get_scanline();
-int get_sprite_count();
+int get_frame();
 
 void ppu_rendering();
+
+#endif
