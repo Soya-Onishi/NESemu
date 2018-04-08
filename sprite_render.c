@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "ppu.h"
 #include "ppu_rendering.h"
 
@@ -22,7 +23,7 @@ void sprite_visible() {
 
   if(~ppu_reg.mask & SPRITE_ENABLE) return;
 
-  if(dots >= 1 && dots <= 64) {
+  if(dots >= 1 && dots < 32) {
     //clear secondary oam
     second_oam[dots >> 2][dots & 3] = 0xFF;
   } else if(dots >= 65  && dots <= 256) {
@@ -41,6 +42,7 @@ void sprite_pre_render() {
 
   if(dots >= 257 && dots <= 320) {
     //fetch sprites
+    ppu_reg.oamaddr = 0;
     sprite_fetch(dots);
   }
 }
@@ -59,13 +61,19 @@ void sprite_evaluation() {
     if(dots == 256) {
       writing_disable = 0;
     }
-
     return;
   }
 
   if(dots == 65) {
     n = (ppu_reg.oamaddr >> 2) & 0x3F;
     m = (ppu_reg.oamaddr & 3);
+    sprite_zero_exist = 0;
+    //n = 0;
+    //m = 0;
+    if(n != 0) {
+      printf("not zero\n");
+    }
+    offset = 0;
   }
 
   if(dots % 2 == 0) {
@@ -108,11 +116,11 @@ void sprite_evaluation() {
 
     //step 2 in evaluation
     n = (n + 1) & 0x3F;
-    if(offset < 8) return;
     if(n == 0) {
       writing_disable = 1;
       return;
     }
+    if(offset < 8) return;
   }
 }
 
@@ -145,7 +153,7 @@ void sprite_fetch(int dots) {
 
         if(second_oam[offset][2] & V_REV) {
           //vertical reverse      
-          addr += 7 - get_scanline() - second_oam[offset][0];
+          addr += 7 - (get_scanline() - second_oam[offset][0]);
         } else {
           //not vertical reverse
           addr += get_scanline() - second_oam[offset][0];
@@ -154,7 +162,7 @@ void sprite_fetch(int dots) {
 
       data = vram_read(addr);
 
-      if(second_oam[offset][2] & H_REV) {
+      if(!(second_oam[offset][2] & H_REV)) {
         data = bit_reverse(data);
       }
 
@@ -166,11 +174,13 @@ void sprite_fetch(int dots) {
 
       data = vram_read(addr + 8);
 
-      if(second_oam[offset][2] & H_REV) {
+      if(!(second_oam[offset][2] & H_REV)) {
         data = bit_reverse(data);
       }
 
       sprite[offset].sprite_high = data;
+      sprite[offset].x_counter = second_oam[offset][3];
+      sprite[offset].attribute = second_oam[offset][2];
 
       if(offset == 0 && sprite_zero_exist) {
         sprite[offset].is_sprite_zero = 1;

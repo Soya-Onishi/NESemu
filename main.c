@@ -39,7 +39,7 @@ void open_file(char *filename) {
   FILE *fp;
   unsigned char header[16];
   int prg_size, chr_size;
-  int i;
+  int i, j, k = 0;
 
   fp = fopen(filename, "rb");
   if(fp == NULL) {
@@ -50,18 +50,21 @@ void open_file(char *filename) {
   fread(header, sizeof(unsigned char), 16, fp);
   prg_size = header[4] * 16384;
   chr_size = header[5] * 8192;
+  nes_flag6 = header[6];
 
-  if(fseek(fp, 16, SEEK_SET) != 0) {
-    fprintf(stderr, "seek error\n");
-    exit(1);
-  }
 
-  for(i = 0; i < prg_size; i++) {
-    unsigned char data;
+  for(i = 0; i < 0x8000; i += prg_size) {
+    if(fseek(fp, 16, SEEK_SET) != 0) {
+      fprintf(stderr, "seek error\n");
+      exit(1);
+    }
+    for(j = 0; j < prg_size; j++, k++) {
+      unsigned char data;
     
-    fread(&data, sizeof(unsigned char), 1, fp);
+      fread(&data, sizeof(unsigned char), 1, fp);
 
-    memory[0x8000 + i] = data;
+      memory[0x8000 + k] = data;
+    }
   }
 
   if(fseek(fp, 16 + prg_size, SEEK_SET) != 0) {

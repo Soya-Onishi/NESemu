@@ -87,7 +87,7 @@ void memory_write(unsigned short addr, unsigned char data) {
       break;
     case 0x2004:
       //write sprite memory data
-      oam[(ppu_reg.oamaddr >> 2) & 0x3F][ppu_reg.oamaddr & 3] = data;
+      write_to_oamdata(data);
       break;
     case 0x2005:
       //write scroll offset

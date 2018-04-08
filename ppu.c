@@ -8,10 +8,11 @@
 
 void init_display_color();
 unsigned short convert_address(unsigned short addr);
-void init_nametable();
+void init_vram();
 
 void vram_write(unsigned short addr, unsigned char data);
 unsigned char vram_read(unsigned short addr);
+void init_oam();
 
 ppu_registers ppu_reg;
 ppu_rendering_reg ppu_render_info;
@@ -90,7 +91,8 @@ void init_ppu() {
   }
 
   init_display_color();
-  init_nametable();
+  init_vram();
+  init_oam();
 }
 
 void reset_ppu() {
@@ -106,6 +108,7 @@ void reset_ppu() {
   ppu_reg.oamdata = 0;
 
   init_display_color();
+  init_oam();
 }
 
 void init_display_color() {
@@ -162,11 +165,28 @@ unsigned short convert_address(unsigned short addr) {
   return addr;
 }
 
-void init_nametable() {
+void init_vram() {
   unsigned short addr;
+  int i;
+  
+  for(i = 0x2000; i < 0x3FFF; i++) {
+    vram[i] = 0;
+  }
+}
 
-  for(addr = 0x2000; addr < 0x2FFF; addr++) {
-    vram_write(addr, 0x0);
+void init_oam() {
+  int i, j;
+
+  for(i = 0; i < 64; i++) {
+    for(j = 0; j < 4; j++) {
+      oam[i][j] = 0xFF;
+    }
+  }
+
+  for(i = 0; i < 8; i++) {
+    for(j = 0; j < 4; j++) {
+      second_oam[i][j] = 0xFF;
+    }
   }
 }
 

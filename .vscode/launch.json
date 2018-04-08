@@ -9,7 +9,7 @@
     "type": "cppdbg",
     "request": "launch",
     "program": "${workspaceFolder}/a.out",
-    "args": ["sample1/sample1.nes"],
+    "args": ["giko005.nes"],
     "stopAtEntry": false,
     "cwd": "${workspaceFolder}",
     "environment": [],

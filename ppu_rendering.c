@@ -15,7 +15,7 @@ void ppu_rendering() {
   if(scanline == 0 && dots == 0 && frame % 2 == 1) {
     dots++;
   }
-
+  
   //process
   bg_render();
   sprite_render();
