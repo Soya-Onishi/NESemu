@@ -1,6 +1,11 @@
 #include "ppu.h"
 #include "ppu_rendering.h"
 
+#define BG_RED   (1 << 5)
+#define BG_BLUE  (1 << 7)
+#define BG_GREEN (1 << 6)
+#define BG_BLACK (0xE0)
+
 unsigned char read_from_status();
 unsigned char read_from_oamdata();
 void write_to_oamdata(unsigned char data);
@@ -32,18 +37,18 @@ unsigned char memory_read(unsigned short addr) {
   addr = memory_convert(addr);
 
   switch(addr) {
-    case 2000:
-    case 2001:
-    case 2003:
-    case 2005:
-    case 2006:
-    case 4014:
+    case 0x2000:
+    case 0x2001:
+    case 0x2003:
+    case 0x2005:
+    case 0x2006:
+    case 0x4014:
       return ppu_data_bus; 
-    case 2002:
+    case 0x2002:
       return read_from_status();
-    case 2004:
+    case 0x2004:
       return read_from_oamdata();
-    case 2007:
+    case 0x2007:
       return read_from_ppudata();
     default:
       return memory[addr];
@@ -53,39 +58,49 @@ unsigned char memory_read(unsigned short addr) {
 void memory_write(unsigned short addr, unsigned char data) {
   addr = memory_convert(addr);
 
-  if((addr >= 2000 && addr <= 2007) || addr == 4014) {
+  if((addr >= 0x2000 && addr <= 0x2007) || addr == 0x4014) {
     ppu_data_bus = data;
   }
 
   switch(addr) {
-    case 2000:
+    case 0x2000:
       //write to ctrl register
       ppu_reg.ctrl = data;
+      ppu_render_info.t = (ppu_render_info.t & 0xF3FF) | ((data & 3) << 10); 
       break;
-    case 2001:
+    case 0x2001:
       //write to mask register
       ppu_reg.mask = data;
+      if((ppu_reg.mask & BG_BLACK) == 0) {
+        vram_write(0x3F00, 0x3F);
+      } else if(ppu_reg.mask & BG_RED) {
+        vram_write(0x3F00, 0x16);
+      } else if(ppu_reg.mask & BG_BLUE) {
+        vram_write(0x3F00, 0x12);
+      } else if(ppu_reg.mask & BG_GREEN) {
+        vram_write(0x3F00, 0x1A);
+      }
       break;
-    case 2003:
+    case 0x2003:
       //write to sprite memory addr
       ppu_reg.oamaddr = data;
       break;
-    case 2004:
+    case 0x2004:
       //write sprite memory data
       oam[(ppu_reg.oamaddr >> 2) & 0x3F][ppu_reg.oamaddr & 3] = data;
       break;
-    case 2005:
+    case 0x2005:
       //write scroll offset
       write_to_scroll(data);
       break;
-    case 2006:
+    case 0x2006:
       //write accessing ppu memory address
       write_to_ppuaddr(data);
       break;
-    case 2007:
+    case 0x2007:
       write_to_ppudata(data);
       break;
-    case 4014:
+    case 0x4014:
       //DMA is occured
       dma_exec(data);
     default:
@@ -154,19 +169,19 @@ void write_to_scroll(unsigned char data) {
     //write vertical scroll
     unsigned short fine_y, coarse_y;
 
-    fine_y = ((unsigned short)data & 0x07) << 12;
-    coarse_y = ((unsigned short)data & 0xF8) << 2;
+    fine_y = ((unsigned short)data & 0x0007) << 12;
+    coarse_y = ((unsigned short)data & 0x00F8) << 2;
 
-    ppu_render_info.t = fine_y | (ppu_render_info.t & 0x0C1F) | coarse_y; 
+    ppu_render_info.t = fine_y | (ppu_render_info.t & ~0x73E0) | coarse_y; 
   } else {
     //write horizontal scroll
 
-    unsigned short fine_x, coarse_x;
+    unsigned char fine_x, coarse_x;
 
-    fine_x = ((unsigned short)data & 0x07);
-    coarse_x = ((unsigned short)data & 0xF8) >> 3;
+    fine_x = data & 0x07;
+    coarse_x = (data & 0xF8) >> 3;
 
-    ppu_render_info.t = (ppu_render_info.t & 0x001F) | coarse_x;
+    ppu_render_info.t = (ppu_render_info.t & ~0x001F) | coarse_x;
     ppu_render_info.fine_x = fine_x; 
   }
 

@@ -60,7 +60,7 @@ int branch_relative(int (*exec_branch)()) {
   if(exec_branch()) {
     //additional_cycle++;
     ppu_cycle();
-    after += before + offset;
+    after = before + offset;
 
     if((after & 0xf0) != (before & 0xf0)) {
       //additional_cycle++;

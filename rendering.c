@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "GL/glut.h"
 #include "ppu.h"
 #include "ppu_rendering.h"
@@ -52,10 +53,61 @@ void rendering() {
       addr = sprite_addr;
     }
 
+    renew_registers();
+
     //store addr;
     rendering_addrs[scanline][dots - 1] = addr;
+
+    /*
+    if((addr & 0xF) == 0) {
+      printf("   ");
+    } else {
+      printf("%d%d ", (addr & 12) >> 2, addr & 3);
+    }
+    if(dots == 256) {
+      printf("\n");
+      if(scanline == 239) {
+        printf("\n=========================================\n\n");
+      }
+    }
+    */
   } else if(scanline == 240) {
     address_to_color();
+
+  /*
+    int x, y;
+
+    for(y = 0; y < 30; y++) {
+      for(x = 0; x < 32; x++) {
+        printf("%2x ", vram[0x2000 + (y * 32) + x]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+    */
+
+   /*
+   int x, y;
+
+   for(y = 0; y < 8; y++) {
+      for(x = 0; x < 8; x++) {
+      unsigned char lower = vram[0x480 + y] & (1 << x);
+      unsigned char upper = vram[0x488 + y] & (1 << x);
+      unsigned char data = 0;
+
+      if(lower) {
+        data = 1;
+      }
+      if(upper) {
+        data |= 2;
+      }
+      
+      printf("%2d", data);
+     }
+     printf("\n");
+   }
+   printf("\n");
+   */
   }
 }
 
@@ -82,7 +134,7 @@ void renew_registers() {
 
 void address_to_color() {
   int dots = get_dots();
-  int i;
+  int i, j;
 
   if(dots < 240) {
     for(i = 0; i < 256; i++) {
@@ -94,7 +146,9 @@ void address_to_color() {
         color_addr &= 0x30;
       }
 
-      rendering_color[dots][i] = (int *)pallet_colors[color_addr];
+      for(j = 0; j < 3; j++) {
+        rendering_color[dots][i][j] = pallet_colors[color_addr][j];
+      }
     }
   } else if(dots == 240) {
     ready_for_drawing = 1;
@@ -108,14 +162,15 @@ void display() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
 
+  glPointSize(10);
   glBegin(GL_POINTS);
   for(y = 0; y < HEIGHT; y++) {
     for(x = 0; x < WIDTH; x++) {
       GLfloat red, blue, green;
 
-      red = (GLfloat)rendering_color[y][x][0] / 255.0;
-      green = (GLfloat)rendering_color[y][x][1] / 255.0;
-      blue = (GLfloat)rendering_color[y][x][2] / 255.0;
+      red = (GLfloat)rendering_color[y][x][0];
+      green = (GLfloat)rendering_color[y][x][1];
+      blue = (GLfloat)rendering_color[y][x][2];
       
       glColor3f(red, green, blue);
       glVertex2i(x, y);
@@ -131,8 +186,8 @@ void reload_shift_reg() {
   int i;
 
   for(i = 0; i < 2; i++) {
-    bg_pattern_reg[i] = (bg_pattern_reg[i] & 0x0F) | ((unsigned short)bg_latch[i] << 8);
-    bg_attr_reg[i] = (bg_attr_reg[i] & 0x0F);
+    bg_pattern_reg[i] = (bg_pattern_reg[i] & 0xFF) | ((unsigned short)bg_latch[i] << 8);
+    bg_attr_reg[i] = (bg_attr_reg[i] & 0xFF);
     
     //at_latch       : bit0 = 0 bit1 = 1
     //bg_attr_reg[0] : 0000 0000 1111 1111 => 0000 0000 1111 1111
@@ -174,6 +229,30 @@ unsigned short calc_bg_pixel_addr() {
     bg_addr |= 1 << 1;
   }
 
+  
+  /*
+  {
+    int scanline = get_scanline();
+
+    printf("%d", bg_addr & 0x3);
+    if((dots - 1) % 8 == 7) {
+      printf(" ");
+    }
+
+    if(dots == 256) {
+      printf("\n");
+      if(scanline % 8 == 7) {
+        printf("\n");
+      }
+      if(scanline == 239) {
+        printf("\n");
+      }
+    }
+    
+    
+  }
+  */ 
+ 
   bg_addr |= 0x3F00;
 
   return bg_addr;
@@ -210,11 +289,11 @@ rendering_sprite calc_sprite_pixel_addr(unsigned short *addr) {
     }
   }
 
-  *addr = sprite_addr;
-
   if(sprite_addr) {
+    *addr = 0x3F10 | ((sprite[return_offset].attribute & 0x03) << 2) | sprite_addr;
     return sprite[return_offset];
   } else {
+    *addr = 0;
     return std_sprite;
   }
 }

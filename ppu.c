@@ -33,9 +33,9 @@ unsigned char oam[64][4];
 unsigned char second_oam[8][4];
 
 unsigned short rendering_addrs[240][256];
-int *rendering_color[240][256];
+float rendering_color[240][256][3];
 
-unsigned char pallet_color[0x40][3] = {
+float pallet_colors[0x40][3] = {
   {84, 84, 84}, {0, 30, 116}, {8, 16, 144}, {48, 0, 136}, {68, 0, 100}, {92, 0, 48}, {84, 4, 0}, {60, 24, 0}, 
   {32, 42, 0}, {8, 58, 0}, {0, 64, 0}, {0, 60, 0}, {0, 50, 60}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
   {152, 150, 152}, {8, 76, 196}, {48, 50, 236}, {92, 30, 228}, {136, 20, 176}, {160, 20, 100}, {152, 34, 32}, {120, 60, 0},
@@ -68,6 +68,8 @@ void ppu_cycle() {
 }
 
 void init_ppu() {
+  int i, j;
+
   ppu_reg.ctrl = 0;
   ppu_reg.mask = 0;
   ppu_reg.status = 0;
@@ -76,6 +78,16 @@ void init_ppu() {
   ppu_reg.scroll = 0;
   ppu_reg.ppuaddr = 0;
   ppu_reg.oamdata = 0;
+
+  for(i = 0; i < 0x40; i++) {
+    for(j = 0; j < 3; j++) {
+      pallet_colors[i][j] /= 255.0;
+    }
+  }
+
+  for(i = 0x2000; i < 0x4000; i++) {
+    vram[i] = 0;
+  }
 
   init_display_color();
   init_nametable();
@@ -97,11 +109,13 @@ void reset_ppu() {
 }
 
 void init_display_color() {
-  int x, y;
+  int x, y, i;
 
   for(y = 0; y < 240; y++) {
     for(x = 0; x < 256; x++) {
-      rendering_color[y][x] = (int*)pallet_color[0x39];
+      for(i = 0; i < 3; i++) {
+        rendering_color[y][x][i] = pallet_colors[0x39][i];
+      }
     }
   }
 }
@@ -109,6 +123,22 @@ void init_display_color() {
 void vram_write(unsigned short addr, unsigned char data) {
   addr = convert_address(addr);
   vram[addr] = data;
+
+  /*
+  if(!(addr >= 8649 && addr <= 8660) && data == 'H') {
+    int i = 0;
+
+    for(i = 0; i < 0x3C0; i++) {
+      printf("%X ", vram[0x2000 + i]);
+      if(i % 32 == 31) {
+        printf("\n");
+      }
+    }
+
+    fflush(stdout);
+    exit(0);
+  }
+  */
 }
 
 unsigned char vram_read(unsigned short addr) {
@@ -121,9 +151,9 @@ unsigned short convert_address(unsigned short addr) {
     addr &= 0x2FFF;
 
     if(nes_flag6 & 0x01) {
-      addr &= 0xF4FF;
+      addr &= 0xF7FF;
     } else if(!(nes_flag6 & 0x01)) {
-      addr &= 0xF8FF;
+      addr &= 0xFBFF;
     }
   } else if(addr >= 0x3F00 && addr <= 0x3FFF) {
     addr &= 0xFF1F;
@@ -136,6 +166,17 @@ void init_nametable() {
   unsigned short addr;
 
   for(addr = 0x2000; addr < 0x2FFF; addr++) {
-    vram_write(addr, 0xFF);
+    vram_write(addr, 0x0);
   }
+}
+
+unsigned char bit_reverse(unsigned char data) {
+  unsigned char tmp = (data << 4) & 0xF0;
+  data = tmp | ((data >> 4) & 0x0F);
+  tmp = (data << 2) & 0xCC;
+  data = tmp | ((data >> 2) & 0x33);
+  tmp = (data << 1) & 0xAA;
+  data = tmp | ((data >> 1) & 0x55);
+
+  return data;
 }

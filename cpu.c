@@ -30,11 +30,11 @@ void cpu() {
 void init_cpu() {
   intr_flags.nmi = 0;
   intr_flags.irq = 0;
-  intr_flags.reset = 0;
+  intr_flags.reset = 1;
 
   registers.accumulator = 0;
   registers.index_x = 0;
   registers.index_y = 0;
   registers.status = 0x34;
-  registers.stack = 0xFD;
+  registers.stack = 0;
 }

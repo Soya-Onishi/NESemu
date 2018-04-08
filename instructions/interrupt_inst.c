@@ -18,6 +18,8 @@
 int reset_implied() {
   unsigned short new_pc;
 
+  intr_flags.reset = 0;
+
   registers.status |= STATUS_I;
   registers.stack -= 3;
   reset_ppu();
@@ -40,6 +42,9 @@ int reset_implied() {
 }
 
 int nmi_implied() {
+
+  intr_flags.nmi = 0;
+  return 0;
   
   registers.status &= ~STATUS_B;
   ppu_cycle();
@@ -64,6 +69,8 @@ int nmi_implied() {
 }
 
 int irq_implied() {
+  intr_flags.irq = 0;
+
   if(registers.status & STATUS_I) {
     int i;
 

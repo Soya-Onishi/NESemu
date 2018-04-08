@@ -13,10 +13,14 @@ int inc_dec_absolute_x(unsigned char(*exec_inc_dec)(unsigned char));
 
 
 unsigned char exec_increment(unsigned char data) {
+  set_z_flag(data + 1);
+  set_n_flag(data + 1);
   return data + 1;
 }
 
 unsigned char exec_decrement(unsigned char data) {
+  set_z_flag(data - 1);
+  set_z_flag(data - 1);
   return data - 1;
 }
 
@@ -146,25 +150,25 @@ int dec_absolute_x() {
 }
 
 int inx_implied() {
-  registers.index_x++;
+  registers.index_x = exec_increment(registers.index_x);
   ppu_cycle();
   return 0;
 }
 
 int dex_implied() {
-  registers.index_x--;
+  registers.index_x = exec_decrement(registers.index_x);
   ppu_cycle();
   return 0;
 }
 
 int iny_implied() {
-  registers.index_y++;
+  registers.index_y = exec_increment(registers.index_y);
   ppu_cycle();
   return 0;
 }
 
 int dey_implied() {
-  registers.index_y--;
+  registers.index_y = exec_decrement(registers.index_y);
   ppu_cycle();
   return 0;
 }

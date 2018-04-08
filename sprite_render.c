@@ -7,8 +7,6 @@ void sprite_pre_render();
 void sprite_evaluation();
 void sprite_fetch(int dots);
 
-unsigned char bit_reverse(unsigned char data);
-
 void sprite_render() {
   int scanline = get_scanline();
 
@@ -22,7 +20,7 @@ void sprite_render() {
 void sprite_visible() {
   int dots = get_dots();
 
-  if(ppu_reg.mask & SPRITE_ENABLE) return;
+  if(~ppu_reg.mask & SPRITE_ENABLE) return;
 
   if(dots >= 1 && dots <= 64) {
     //clear secondary oam
@@ -38,6 +36,8 @@ void sprite_visible() {
 
 void sprite_pre_render() {
   int dots = get_dots();
+
+  if(~ppu_reg.mask & SPRITE_ENABLE) return;
 
   if(dots >= 257 && dots <= 320) {
     //fetch sprites
@@ -182,15 +182,4 @@ void sprite_fetch(int dots) {
     default:
       break;
   }
-}
-
-unsigned char bit_reverse(unsigned char data) {
-  unsigned char tmp = (data << 4) & 0xF0;
-  data = tmp | ((data >> 4) & 0x0F);
-  tmp = (data << 2) & 0xCC;
-  data = tmp | ((data >> 2) & 0x33);
-  tmp = (data << 1) & 0xAA;
-  data = tmp | ((data >> 1) & 0x55);
-
-  return data;
 }

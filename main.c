@@ -18,13 +18,14 @@ int main(int argc, char *argv[]) {
   }
 
   glutInit(&argc, argv);
-  glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+  glutInitWindowSize(WINDOW_WIDTH * 3, WINDOW_HEIGHT * 3);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
   glutCreateWindow("NES EMU");
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   glutIdleFunc(cpu);
 
+  glClearColor(1.0, 1.0, 1.0, 1.0);
   init_cpu();
   init_ppu();
   open_file(argv[1]);
@@ -76,6 +77,7 @@ void open_file(char *filename) {
     vram[i] = data;
   }
 
+  fclose(fp);
 }
 
 void reshape(int w, int h) {

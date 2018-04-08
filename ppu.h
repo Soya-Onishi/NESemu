@@ -69,8 +69,8 @@ extern unsigned char oam[64][4];
 extern unsigned char second_oam[8][4];
 
 extern unsigned short rendering_addrs[240][256];
-extern int *rendering_color[240][256];
-extern unsigned char pallet_colors[0x40][3];
+extern float rendering_color[240][256][3];
+extern float pallet_colors[0x40][3];
 
 void ppu_cycle();
 
@@ -79,5 +79,6 @@ void reset_ppu();
 
 void vram_write(unsigned short addr, unsigned char data);
 unsigned char vram_read(unsigned short addr);
+unsigned char bit_reverse(unsigned char data);
 
 #endif
