@@ -1,5 +1,6 @@
 #include "ppu.h"
 #include "ppu_rendering.h"
+#include "controller.h"
 
 #define BG_RED   (1 << 5)
 #define BG_BLUE  (1 << 7)
@@ -50,6 +51,9 @@ unsigned char memory_read(unsigned short addr) {
       return read_from_oamdata();
     case 0x2007:
       return read_from_ppudata();
+    case 0x4016:
+    case 0x4017:
+      return read_controller(addr);
     default:
       return memory[addr];
   }
@@ -71,15 +75,6 @@ void memory_write(unsigned short addr, unsigned char data) {
     case 0x2001:
       //write to mask register
       ppu_reg.mask = data;
-      if((ppu_reg.mask & BG_BLACK) == 0) {
-        vram_write(0x3F00, 0x3F);
-      } else if(ppu_reg.mask & BG_RED) {
-        vram_write(0x3F00, 0x16);
-      } else if(ppu_reg.mask & BG_BLUE) {
-        vram_write(0x3F00, 0x12);
-      } else if(ppu_reg.mask & BG_GREEN) {
-        vram_write(0x3F00, 0x1A);
-      }
       break;
     case 0x2003:
       //write to sprite memory addr
@@ -103,6 +98,8 @@ void memory_write(unsigned short addr, unsigned char data) {
     case 0x4014:
       //DMA is occured
       dma_exec(data);
+    case 0x4016:
+      set_controller(data);
     default:
       memory[addr] = data;
       break;

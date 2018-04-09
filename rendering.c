@@ -149,9 +149,27 @@ void address_to_color() {
       for(j = 0; j < 3; j++) {
         rendering_color[dots][i][j] = pallet_colors[color_addr][j];
       }
+
+      /*
+      output palette data per frame
+
+      int p;
+      for(p = 0; p < 0x20; p++) {
+        printf("%02x ", vram[0x3F00 + p]);
+        if(p % 4 == 3) {
+          printf("\n");
+        } 
+      }
+      printf("\n=================================\n\n");
+      */
+
+      //printf("%02x ", color_addr & 0xFF);
     }
+    //printf("\n");
+
   } else if(dots == 240) {
     ready_for_drawing = 1;
+    //printf("\n======================================================\n\n");
   }
 }
 

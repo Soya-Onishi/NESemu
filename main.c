@@ -4,6 +4,7 @@
 #include"ppu.h"
 #include"memory.h"
 #include"rendering.h"
+#include"controller.h"
 
 #define WINDOW_WIDTH 256
 #define WINDOW_HEIGHT 240
@@ -24,6 +25,10 @@ int main(int argc, char *argv[]) {
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   glutIdleFunc(cpu);
+  glutSpecialFunc(special_key_down);
+  glutSpecialUpFunc(special_key_up);
+  glutKeyboardFunc(key_down);
+  glutKeyboardUpFunc(key_up);
 
   glClearColor(1.0, 1.0, 1.0, 1.0);
   init_cpu();

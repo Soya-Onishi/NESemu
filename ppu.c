@@ -125,6 +125,7 @@ void init_display_color() {
 
 void vram_write(unsigned short addr, unsigned char data) {
   addr = convert_address(addr);
+
   vram[addr] = data;
 
   /*
