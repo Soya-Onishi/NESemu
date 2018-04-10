@@ -53,9 +53,9 @@ void exec_sbc(unsigned char data) {
   set_n_flag(registers.accumulator);
 
   if(registers.accumulator > before) {
-    registers.status |= STATUS_C;
-  } else {
     registers.status &= ~STATUS_C;
+  } else {
+    registers.status |= STATUS_C;
   }
 }
 
