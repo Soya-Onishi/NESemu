@@ -42,7 +42,7 @@ void bg_post_rendering() {
 void bg_vblank() {
   if(get_scanline() == 241 && get_dots() == 1) {
     ppu_reg.status |= START_VBLANK;
-    if(ppu_reg.status & NMI_ENABLE) {
+    if(ppu_reg.ctrl & NMI_ENABLE) {
       intr_flags.nmi = 1;
     }
   }

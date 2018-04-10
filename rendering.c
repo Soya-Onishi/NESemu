@@ -179,13 +179,13 @@ void display() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
-
+  
   glPointSize(10);
   glBegin(GL_POINTS);
   for(y = 0; y < HEIGHT; y++) {
     for(x = 0; x < WIDTH; x++) {
       GLfloat red, blue, green;
-
+      
       red = (GLfloat)rendering_color[y][x][0];
       green = (GLfloat)rendering_color[y][x][1];
       blue = (GLfloat)rendering_color[y][x][2];

@@ -44,7 +44,6 @@ int reset_implied() {
 int nmi_implied() {
 
   intr_flags.nmi = 0;
-  return 0;
   
   registers.status &= ~STATUS_B;
   ppu_cycle();
