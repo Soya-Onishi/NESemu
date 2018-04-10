@@ -161,6 +161,10 @@ unsigned short convert_address(unsigned short addr) {
     }
   } else if(addr >= 0x3F00 && addr <= 0x3FFF) {
     addr &= 0xFF1F;
+
+    if((addr & 0x03) == 0) {
+      addr &= 0xFF0F;
+    }
   }
 
   return addr;

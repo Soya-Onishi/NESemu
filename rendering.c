@@ -18,45 +18,48 @@ void rendering() {
   unsigned char bg_pallet, sprite_pallet;
   rendering_sprite sp;
 
-  if(scanline >= 0 && scanline <= 239 && dots >= 1 && dots <= 256) {
+  if(scanline >= 0 && scanline <= 239) {
     //select displayed pixel's address
-    bg_addr = calc_bg_pixel_addr();
-    sp = calc_sprite_pixel_addr(&sprite_addr);
+    if(dots >= 1 && dots <= 256) {
+      bg_addr = calc_bg_pixel_addr();
+      sp = calc_sprite_pixel_addr(&sprite_addr);
 
-    bg_pallet = bg_addr & 3;
-    sprite_pallet = sprite_addr & 3;
+      bg_pallet = bg_addr & 3;
+      sprite_pallet = sprite_addr & 3;
 
-    if((~ppu_reg.mask & SPRITE_MASK) && dots >= 1 && dots <= 8) {
-      sprite_pallet = 0;
-    }
-    if((~ppu_reg.mask & BG_MASK) && dots >= 1 && dots <= 8) {
-      bg_pallet = 0;
-    }
-
-    if(bg_pallet == 0 && sprite_pallet == 0) {
-      addr = 0x3F00;
-    } else if(bg_pallet == 0 && sprite_pallet != 0) {
-      addr = sprite_addr;
-    } else if(bg_pallet != 0 && sprite_pallet == 0) {
-      addr = bg_addr;
-    } else if(sp.attribute & BG_PRIO) {
-      if(sp.is_sprite_zero && dots != 256) {
-        ppu_reg.status |= SPRITE_HIT;
+      if((~ppu_reg.mask & SPRITE_MASK) && dots >= 1 && dots <= 8) {
+        sprite_pallet = 0;
+      }
+      if((~ppu_reg.mask & BG_MASK) && dots >= 1 && dots <= 8) {
+        bg_pallet = 0;
       }
 
-      addr = bg_addr;
-    } else {
-      if(sp.is_sprite_zero && dots != 256) {
-        ppu_reg.status |= SPRITE_HIT;
+      if(bg_pallet == 0 && sprite_pallet == 0) {
+        addr = 0x3F00;
+      } else if(bg_pallet == 0 && sprite_pallet != 0) {
+        addr = sprite_addr;
+      } else if(bg_pallet != 0 && sprite_pallet == 0) {
+        addr = bg_addr;
+      } else if(sp.attribute & BG_PRIO) {
+        if(sp.is_sprite_zero && dots != 256) {
+          ppu_reg.status |= SPRITE_HIT;
+        }
+
+        addr = bg_addr;
+      } else {
+        if(sp.is_sprite_zero && dots != 256) {
+          ppu_reg.status |= SPRITE_HIT;
+        }
+
+        addr = sprite_addr;
       }
+      renew_registers();
 
-      addr = sprite_addr;
+      //store addr;
+      rendering_addrs[scanline][dots - 1] = addr;
+    } else if(dots >= 321 && dots <= 337) {
+      renew_registers();
     }
-
-    renew_registers();
-
-    //store addr;
-    rendering_addrs[scanline][dots - 1] = addr;
 
     /*
     display display's color addr
@@ -122,6 +125,18 @@ void rendering() {
       printf("\n");
     }
     printf("\n===========\n\n");
+    */
+
+    /*
+    //display palette
+    int p;
+    for(p = 0x3F00; p < 0x3F20; p++) {
+      printf("%02X ", vram[p]);
+      if(p % 4 == 3) {
+        printf("\n");
+      } 
+    }
+    printf("\n==========================\n\n");
     */
   }
 }
@@ -284,7 +299,7 @@ unsigned short calc_bg_pixel_addr() {
     
     
   }
-  */ 
+  */
  
   bg_addr |= 0x3F00;
 

@@ -152,14 +152,11 @@ void bg_tile_fetch(int dots) {
           unsigned char data;
 
           data = (low & 0x1) | ((up & 0x1) << 1);
-          if(data == 0) {
-            printf("  ");
-          } else {
-            printf("%X ", data);
-          }
+          printf("%X", data);
           up = (up >> 1) & 0x7F;
           low = (low >> 1) & 0x7F;
         }
+        printf(" ");
 
         if(dots == 256) {
           printf("\n");
