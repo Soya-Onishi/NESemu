@@ -59,6 +59,8 @@ void rendering() {
     rendering_addrs[scanline][dots - 1] = addr;
 
     /*
+    display display's color addr
+
     if((addr & 0xF) == 0) {
       printf("   ");
     } else {
@@ -71,6 +73,7 @@ void rendering() {
       }
     }
     */
+    
   } else if(scanline == 240) {
     address_to_color();
 
@@ -108,6 +111,18 @@ void rendering() {
    }
    printf("\n");
    */
+
+    /*
+    //display oam content
+    int n, m;
+    for(n = 0; n < 64; n++) {
+      for(m = 0; m < 4; m++) {
+        printf("%02x ", oam[n][m]);
+      }
+      printf("\n");
+    }
+    printf("\n===========\n\n");
+    */
   }
 }
 
@@ -297,11 +312,11 @@ rendering_sprite calc_sprite_pixel_addr(unsigned short *addr) {
         sprite_addr = sprite[i].sprite_low & 0x01;
         sprite_addr |= (sprite[i].sprite_high & 0x01) << 1;
 
-        sprite[i].sprite_low  = (sprite[i].sprite_low  >> 1) & 0x7F;
-        sprite[i].sprite_high = (sprite[i].sprite_high >> 1) & 0x7F;
-
         return_offset = i;
       }
+
+      sprite[i].sprite_low  = (sprite[i].sprite_low  >> 1) & 0x7F;
+      sprite[i].sprite_high = (sprite[i].sprite_high >> 1) & 0x7F;
     } else {
       sprite[i].x_counter--;
     }

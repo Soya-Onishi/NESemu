@@ -1,3 +1,4 @@
+#include "stdio.h"
 #include "ppu.h"
 #include "ppu_rendering.h"
 #include "controller.h"
@@ -239,5 +240,13 @@ void dma_exec(unsigned char std_addr) {
     
     i++;
     addr++;
-  }while(i == ppu_reg.oamaddr);
+  }while(i != ppu_reg.oamaddr);
+}
+
+void init_memory() {
+  int i = 0;
+
+  for(i = 0; i < 0x8000; i++) {
+    memory[i] = 0;
+  }
 }

@@ -4,6 +4,7 @@
 #include"cpu_circuit.h"
 #include"ppu.h"
 #include"cpu.h"
+#include "memory.h"
 
 int ready_for_drawing = 0;
 
@@ -37,4 +38,6 @@ void init_cpu() {
   registers.index_y = 0;
   registers.status = 0x34;
   registers.stack = 0;
+
+  init_memory();
 }
