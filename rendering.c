@@ -212,7 +212,7 @@ void display() {
   
   glPointSize(10);
   glBegin(GL_POINTS);
-  for(y = 0; y < HEIGHT; y++) {
+  for(y = 8; y < HEIGHT - 8; y++) {
     for(x = 0; x < WIDTH; x++) {
       GLfloat red, blue, green;
       

@@ -205,7 +205,7 @@ unsigned char read_from_ppudata() {
 }
 
 void address_increment() {
-  if(ppu_reg.status & ADDR_INCREMENT) {
+  if(ppu_reg.ctrl & ADDR_INCREMENT) {
     ppu_render_info.v += 32;
   } else {
     ppu_render_info.v++;
