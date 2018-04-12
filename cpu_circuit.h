@@ -36,11 +36,24 @@ typedef struct interrupt_flags {
   unsigned char reset;
 } interrupt_flags;
 
+typedef struct test_status {
+  unsigned short pc;
+  unsigned char content[3];
+  unsigned char a;
+  unsigned char x;
+  unsigned char y;
+  unsigned char p;
+  unsigned char sp;
+  unsigned char ppu_cycle;
+}test_status;
+
 extern instruction now_inst;
 extern void (*circuit_functions[])();
 extern cpu_register registers;
 extern circuit_line c_line;
 extern interrupt_flags intr_flags;
+
+extern test_status *tester;
 
 #define STACK_UPPER 0x01
 

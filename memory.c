@@ -156,7 +156,7 @@ void write_to_ppuaddr(unsigned char data) {
     ppu_render_info.v = ppu_render_info.t;
   } else {
     //write to higher bits
-    ppu_render_info.t = ((unsigned short)data << 8) | (ppu_render_info.t & 0x00FF);
+    ppu_render_info.t = (((unsigned short)data << 8) | (ppu_render_info.t & 0x00FF)) & 0x3FFF;
   }
 
   ppu_render_info.toggle ^= 1;

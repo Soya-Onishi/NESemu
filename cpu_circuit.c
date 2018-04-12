@@ -6,6 +6,8 @@
 #include"instructions/interrupt_inst.h"
 #include"ppu.h"
 
+test_status *tester;
+
 typedef enum {
   INTERRUPT_RESET_UPPER = 0xfffd,
   INTERRUPT_RESET_LOWER = 0xfffc,

@@ -6,6 +6,8 @@
 #include"cpu.h"
 #include "memory.h"
 
+void test_log_load();
+
 int ready_for_drawing = 0;
 
 unsigned char nes_flag6;
@@ -40,4 +42,28 @@ void init_cpu() {
   registers.stack = 0;
 
   init_memory();
+
+  //test_log_load();
+}
+
+void test_log_load() {
+  int max = 1024;
+  int i;
+  FILE *fp;
+  char str[512];
+
+  fp = fopen("nestest.log", "r");
+  tester = (test_status*)malloc(sizeof(test_status) * max);
+  
+  for(i = 0; i < 3; i++) {
+    fgets(str, 512, fp);
+    printf("%s", str);
+    //sscanf(str, "%x  %x %x %x  A:%x X:%x Y:%x P:%x SP:%x CYC:%x",
+    //&(tester[i].pc), &(tester[i].content[0]), &(tester[i].content[1]), &(tester[i].content[2]), 
+    //&(tester[i].a), &(tester[i].x), &(tester[i].y), &(tester[i].p), &(tester[i].sp), &(tester[i].ppu_cycle));
+
+    printf("%4X  %2X %2X %2X  A:%2X X:%2X Y:%2X P:%2X SP:%2X CYC:%3X\n\n",
+    tester[i].pc, tester[i].content[0], tester[i].content[1], tester[i].content[2], 
+    tester[i].a, tester[i].x, tester[i].y, tester[i].p, tester[i].sp, tester[i].ppu_cycle);
+  }  
 }

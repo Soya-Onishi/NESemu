@@ -16,7 +16,7 @@ void compare_absolute(void (*exec_comp)(unsigned char));
 int cmp_absolute_index(unsigned char index);
 
 void exec_compare(unsigned char a, unsigned char m) {
-  char result;
+  short result;
 
   result = a - m;
   if(result >= 0) {
