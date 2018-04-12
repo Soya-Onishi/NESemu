@@ -25,7 +25,7 @@ int bit_zeropage() {
 
   addr = memory_read(registers.pc + 1);
   ppu_cycle();
-  addr = memory_read(addr);
+  data = memory_read(addr);
   ppu_cycle();
 
   exec_bit(data);

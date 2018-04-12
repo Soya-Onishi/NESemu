@@ -48,13 +48,13 @@ int nmi_implied() {
   registers.status &= ~STATUS_B;
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)(registers.pc >> 8));
+  memory_write(0x0100 | registers.stack--, (unsigned char)(registers.pc >> 8));
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)(registers.pc));
+  memory_write(0x0100 | registers.stack--, (unsigned char)(registers.pc));
   ppu_cycle();
 
-  memory_write(registers.stack--, registers.status);
+  memory_write(0x0100 | registers.stack--, registers.status);
   ppu_cycle();
 
   registers.status |= STATUS_I;
@@ -83,13 +83,13 @@ int irq_implied() {
   registers.status &= ~STATUS_B;
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)(registers.pc >> 8));
+  memory_write(0x0100 | registers.stack--, (unsigned char)(registers.pc >> 8));
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)(registers.pc));
+  memory_write(0x0100 | registers.stack--, (unsigned char)(registers.pc));
   ppu_cycle();
 
-  memory_write(registers.stack--, registers.status);
+  memory_write(0x0100 | registers.stack--, registers.status);
   ppu_cycle();
 
   registers.status |= STATUS_I;
@@ -118,13 +118,13 @@ int brk_implied() {
   registers.status |= STATUS_B;
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)(pushed_pc >> 8));
+  memory_write(0x0100 | registers.stack--, (unsigned char)(pushed_pc >> 8));
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)(pushed_pc));
+  memory_write(0x0100 | registers.stack--, (unsigned char)(pushed_pc));
   ppu_cycle();
 
-  memory_write(registers.stack--, registers.status);
+  memory_write(0x0100 | registers.stack--, registers.status);
   ppu_cycle();
 
   registers.status |= STATUS_I;
@@ -145,13 +145,13 @@ int rti_implied() {
 
   ppu_cycle();
   ppu_cycle();
-  status = memory_read(++registers.stack);
+  status = memory_read(0x0100 | ++registers.stack);
   ppu_cycle();
 
-  pc_lower = memory_read(++registers.stack);
+  pc_lower = memory_read(0x0100 | ++registers.stack);
   ppu_cycle();
 
-  pc_upper = memory_read(++registers.stack);
+  pc_upper = memory_read(0x0100 | ++registers.stack);
   ppu_cycle();
 
   registers.status = status;

@@ -53,10 +53,10 @@ int jsr_absolute() {
   next_inst_addr = registers.pc + 2;
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)(next_inst_addr >> 8));
+  memory_write(0x0100 | registers.stack--, (unsigned char)(next_inst_addr >> 8));
   ppu_cycle();
 
-  memory_write(registers.stack--, (unsigned char)next_inst_addr);
+  memory_write(0x0100 | registers.stack--, (unsigned char)next_inst_addr);
   ppu_cycle();
 
   registers.pc = addr - 3;  // 3 is byte length of jsr absolute instruction
@@ -70,10 +70,10 @@ int rts_implied() {
   ppu_cycle();
   ppu_cycle();
 
-  addr = memory_read(++registers.stack);
+  addr = memory_read(0x0100 | ++registers.stack);
   ppu_cycle();
 
-  addr |= (unsigned short)memory_read(++registers.stack) << 8;
+  addr |= (unsigned short)memory_read(0x0100 | ++registers.stack) << 8;
   ppu_cycle();
 
   ppu_cycle();
