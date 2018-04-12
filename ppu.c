@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "ppu.h"
 #include "ppu_rendering.h"
 #include "cpu.h"
@@ -124,6 +125,10 @@ void init_display_color() {
 }
 
 void vram_write(unsigned short addr, unsigned char data) {
+  if(addr >= 0x4000) {
+    printf("out of bounds 0x%X\n", addr);
+  }
+  
   addr = convert_address(addr);
 
   vram[addr] = data;
