@@ -9,7 +9,7 @@
     "type": "cppdbg",
     "request": "launch",
     "program": "${workspaceFolder}/a.out",
-    "args": ["giko018.nes"],
+    "args": ["nestest.nes"],
     "stopAtEntry": false,
     "cwd": "${workspaceFolder}",
     "environment": [],

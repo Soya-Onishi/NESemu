@@ -6,6 +6,9 @@
 #include"instructions/interrupt_inst.h"
 #include"ppu.h"
 
+void print_instruction(instruction inst);
+
+int test_start = 0;
 test_status *tester;
 
 typedef enum {
@@ -57,11 +60,23 @@ int fetch_instruction() {
   ppu_cycle();
   
   inst = instruction_set[opcode];
+  //print_instruction(inst);
   additional_cycle = inst.instruction();
   registers.pc += inst.length;
 
   return additional_cycle + inst.cycle;
 }
 
+void print_instruction(instruction inst) {
+  int i;
+
+  if(!test_start) return;
+
+  printf("%04X  ", registers.pc);
+  for(i = 0; i < inst.length; i++) {
+    printf("%02X ", memory[registers.pc + i]);
+  }
+  printf("\n");
+}
 
 

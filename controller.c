@@ -90,6 +90,7 @@ void key_down(unsigned char key, int x, int y) {
       break;
     case 'm':
       //display_nametable();
+      test_start = 1;
       break;
   }
 }

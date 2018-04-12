@@ -54,6 +54,7 @@ extern circuit_line c_line;
 extern interrupt_flags intr_flags;
 
 extern test_status *tester;
+extern int test_start;
 
 #define STACK_UPPER 0x01
 
