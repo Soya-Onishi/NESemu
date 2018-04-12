@@ -2,6 +2,7 @@
 #include "GL/glut.h"
 #include"cpu_circuit.h"
 #include"controller.h"
+#include"ppu.h"
 
 static unsigned char p1_internal_register = 0;
 static unsigned char p2_internal_register = 0;
@@ -39,6 +40,35 @@ unsigned char read_controller(unsigned short addr) {
   }
 }
 
+void display_nametable() {
+  //display nametable $2000~ and $2400~
+    int p;
+
+    for(p = 0x2000; p < 0x23C0; p++) {
+      if(vram[p] != 0) {
+        printf("%2X ", vram[p]);
+      } else {
+        printf("   ");
+      }
+      if((p - 0x2000) % 32 == 31) {
+        printf("\n");
+      }
+    }
+    printf("\n");
+
+    for(p = 0x2400; p < 0x27C0; p++) {
+      if(vram[p] != 0) {
+        printf("%2X ", vram[p]);
+      } else {
+        printf("   ");
+      }
+      if((p - 0x2400) % 32 == 31) {
+        printf("\n");
+      }
+    }
+
+    printf("\n=================================================================\n\n");
+}
 
 void key_down(unsigned char key, int x, int y) {
   switch(key) {
@@ -57,6 +87,9 @@ void key_down(unsigned char key, int x, int y) {
     case 'o':
     case 'O':
       p1_internal_register |= CONTROLLER_SELECT;
+      break;
+    case 'm':
+      //display_nametable();
       break;
   }
 }
