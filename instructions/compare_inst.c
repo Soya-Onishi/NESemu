@@ -158,48 +158,54 @@ int cmp_absolute_y() {
 }
 
 int cmp_indirect_x() {
-  unsigned char addr;
-  unsigned short data_addr;
+  unsigned char addr, data;
+  unsigned short exec_addr;
 
   addr = memory_read(registers.pc + 1) + registers.index_x;
   ppu_cycle();
   ppu_cycle();
 
-  data_addr |= (unsigned short)memory_read(addr) << 8;
+  exec_addr = memory_read(addr);
   addr++;
   ppu_cycle();
 
-  data_addr = memory_read(addr);
+  exec_addr |= memory_read(addr) << 8;
   ppu_cycle();
   
-  exec_cmp(memory_read(data_addr));
+  data = memory_read(exec_addr);
+  ppu_cycle();
+
+  exec_cmp(data);
 
   return 0;
 }
 
 int cmp_indirect_y() {
-  unsigned char addr_addr;
-  unsigned short addr, before;
+  unsigned char addr, data;
+  unsigned short exec_addr, before;
   int additional_cycle = 0;
 
-  addr_addr = memory_read(registers.pc + 1);
+  addr = memory_read(registers.pc + 1);
   ppu_cycle();
 
-  addr = (unsigned short)memory_read(addr_addr) << 8;
-  addr_addr++;
+  exec_addr = memory_read(addr);
+  addr++;
   ppu_cycle();
 
-  addr |= (unsigned short)memory_read(addr_addr);
+  exec_addr |= (unsigned short)memory_read(addr) << 8;
   ppu_cycle();
 
-  before = addr;
+  before = exec_addr;
   addr += registers.index_y;
-  if((addr & 0xf0) != (before & 0xf0)) {
+  if((addr & 0xFF00) != (before & 0xFF00)) {
     //additional_cycle++;
     ppu_cycle();
   }
 
-  exec_cmp(memory_read(addr));
+  data = memory_read(addr);
+  ppu_cycle();
+
+  exec_cmp(data);
 
   return additional_cycle;
 }

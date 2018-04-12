@@ -200,7 +200,7 @@ int transfer_absolute_index(void (*exec_trans)(unsigned short), unsigned char in
 
   before = addr;
   addr += index;
-  if((before & 0xf0) != (addr & 0xf0)) {
+  if((before & 0xFF00) != (addr & 0xFF00)) {
     //additional_cycle++;
     ppu_cycle();
   }
@@ -246,7 +246,8 @@ void transfer_indirect_x(void (*exec_trans)(unsigned short)) {
   exec_addr = memory_read(addr);
   ppu_cycle();
 
-  exec_addr |= (unsigned short)memory_read(addr + 1) << 8;
+  addr++;
+  exec_addr |= (unsigned short)memory_read(addr) << 8;
   ppu_cycle();
 
   exec_trans(exec_addr);
@@ -271,17 +272,17 @@ int transfer_indirect_y(void (*exec_trans)(unsigned short)) {
   addr = memory_read(registers.pc + 1);
   ppu_cycle();
 
-  exec_addr = (unsigned short)memory_read(addr) << 8;
+  exec_addr = memory_read(addr);
   ppu_cycle();
 
   addr++;
-  exec_addr |= memory_read(addr);
+  exec_addr |= (unsigned short)memory_read(addr) << 8;
   ppu_cycle();
 
   before = exec_addr;
   exec_addr += registers.index_y;
 
-  if((before & 0xf0) != (exec_addr & 0xf0)) {
+  if((before & 0xFF00) != (exec_addr & 0xFF00)) {
     //addtional_cycle++;
     ppu_cycle();
   }

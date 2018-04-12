@@ -312,7 +312,8 @@ void calc_indirect_x(void (*exec_calc)(unsigned char)) {
   addr = memory_read(offset);
   ppu_cycle();
 
-  addr |= (unsigned short)memory_read(offset + 1) << 8;
+  offset++;
+  addr |= (unsigned short)memory_read(offset) << 8;
   ppu_cycle();
 
   data = memory_read(addr);
@@ -347,30 +348,29 @@ int eor_indirect_x() {
 }
 
 int calc_indirect_y(void (*exec_calc)(unsigned char)) {
-  unsigned char addr_lower, addr_upper, before;
-  unsigned short addr;
-  unsigned char offset;
+  unsigned short exec_addr, before;
+  unsigned char addr;
   unsigned char data;
   int additional_cycle = 0;
 
-  offset = memory_read(registers.pc + 1);
+  addr = memory_read(registers.pc + 1);
   ppu_cycle();
 
-  before = addr_lower = memory_read(offset);
+  exec_addr = memory_read(addr);
   ppu_cycle();
 
-  addr_upper = memory_read(offset + 1);
+  addr++;
+  exec_addr |= memory_read(addr) << 8;
   ppu_cycle();
 
-  addr_lower += registers.index_y;
-  if(addr_lower < before) {
-    addr_upper++;
+  before = exec_addr;
+  exec_addr += registers.index_y;
+
+  if((before & 0xFF00) != (exec_addr & 0xFF00)) {
     ppu_cycle();
-    //additional_cycle++;
   }
 
-  addr = ((unsigned short)addr_upper << 8) + addr_lower;
-  data = memory_read(addr);
+  data = memory_read(exec_addr);
   ppu_cycle();
   
   exec_calc(data);
