@@ -22,7 +22,7 @@ void exec_adc(unsigned char data) {
 
   registers.accumulator += data + (registers.status & STATUS_C);
 
-  if(before <= 0x7f && registers.accumulator >= 0x80) {
+  if(before <= 0x7F && (registers.accumulator >= 0x80 || registers.accumulator < before)) {
     registers.status |= STATUS_V;
   } else {
     registers.status &= ~STATUS_V;
@@ -43,7 +43,7 @@ void exec_sbc(unsigned char data) {
 
   registers.accumulator = registers.accumulator - data - (1 - (registers.status & STATUS_C));
 
-  if(before >= 0x80 && registers.accumulator <= 0x7f) {
+  if(before >= 0x80 && (registers.accumulator <= 0x7F || before < registers.accumulator)) {
     registers.status |= STATUS_V;
   } else {
     registers.status &= ~STATUS_V;

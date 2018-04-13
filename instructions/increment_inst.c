@@ -20,7 +20,7 @@ unsigned char exec_increment(unsigned char data) {
 
 unsigned char exec_decrement(unsigned char data) {
   set_z_flag(data - 1);
-  set_z_flag(data - 1);
+  set_n_flag(data - 1);
   return data - 1;
 }
 
