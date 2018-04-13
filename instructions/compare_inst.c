@@ -139,7 +139,7 @@ int cmp_absolute_index(unsigned char index) {
   before = addr;
 
   addr += index;
-  if((addr & 0xf0) != (before & 0xf0)) {
+  if((addr & 0xFF00) != (before & 0xFF00)) {
     //additional_cycle++;
     ppu_cycle();
   }

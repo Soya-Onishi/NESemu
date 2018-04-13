@@ -200,7 +200,7 @@ int transfer_absolute_index(void (*exec_trans)(unsigned short), unsigned char in
 
   before = addr;
   addr += index;
-  if((before & 0xFF00) != (addr & 0xFF00)) {
+  if(((before & 0xFF00) != (addr & 0xFF00)) || (exec_trans == exec_sta)) {
     //additional_cycle++;
     ppu_cycle();
   }

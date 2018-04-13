@@ -26,13 +26,13 @@ int jmp_indirect() {
 
   addr |= (unsigned short)memory_read(registers.pc + 2) << 8;
   ppu_cycle();
-  ppu_cycle();
 
 
   new_pc = memory_read(addr);
   ppu_cycle();
 
-  new_pc |= (unsigned short)memory_read(addr + 1) << 8;
+  addr = (addr & 0xFF00) | ((addr + 1) & 0x00FF);
+  new_pc |= (unsigned short)memory_read(addr) << 8;
   ppu_cycle();
 
   registers.pc = new_pc - 3; // 3 is byte length of jmp indirect instruction

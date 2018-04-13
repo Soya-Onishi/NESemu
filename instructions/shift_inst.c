@@ -245,9 +245,9 @@ int shift_absolute_x(unsigned char(*exec_shift)(unsigned char)) {
   addr_lower += registers.index_x;
   if(addr_lower < before) {
     addr_upper++;
-    //additional_cycle++;
-    ppu_cycle();
   }
+  //additional_cycle++;
+  ppu_cycle();
 
   addr = ((unsigned short)addr_upper << 8) + addr_lower;
 
