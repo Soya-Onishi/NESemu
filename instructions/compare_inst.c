@@ -173,7 +173,6 @@ int cmp_indirect_x() {
   ppu_cycle();
   
   data = memory_read(exec_addr);
-  ppu_cycle();
 
   exec_cmp(data);
 
@@ -196,14 +195,13 @@ int cmp_indirect_y() {
   ppu_cycle();
 
   before = exec_addr;
-  addr += registers.index_y;
-  if((addr & 0xFF00) != (before & 0xFF00)) {
+  exec_addr += registers.index_y;
+  if((exec_addr & 0xFF00) != (before & 0xFF00)) {
     //additional_cycle++;
     ppu_cycle();
   }
 
-  data = memory_read(addr);
-  ppu_cycle();
+  data = memory_read(exec_addr);
 
   exec_cmp(data);
 

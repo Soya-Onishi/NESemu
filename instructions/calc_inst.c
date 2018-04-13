@@ -16,22 +16,52 @@ void calc_absolute(void (*exec_calc)(unsigned char));
 int calc_absolute_index(unsigned char index, void (*exec_calc)(unsigned char));
 void calc_indirect_x(void (*exec_calc)(unsigned char));
 int calc_indirect_y(void (*exec_calc)(unsigned char));
+void half_adder(unsigned char a, unsigned char b, unsigned char *s, unsigned char *c);
+
+//a and b is operand
+//c is carry
+void bit_carry(unsigned char a, unsigned char b, unsigned char c, unsigned char *bit6, unsigned char *carry) {
+  unsigned char tmp_s1, tmp_s2, tmp_c1, tmp_c2;
+  int i;
+
+  for(i = 0; i < 8; i++) {
+    half_adder(a, b, &tmp_s1, &tmp_c1);
+    half_adder(tmp_s1, c, &tmp_s2, &tmp_c2);
+    c = tmp_c1 | tmp_c2;
+    a >>= 1;
+    b >>= 1;
+
+    if(i == 6) {
+      *bit6 = c;
+    }
+  }
+
+  *carry = c;
+}
+
+void half_adder(unsigned char a, unsigned char b, unsigned char *s, unsigned char *c) {
+  *s = (a & 1) ^ (b & 1);
+  *c = (a & 1) & (b & 1);
+}
 
 void exec_adc(unsigned char data) {
   unsigned char before = registers.accumulator;
+  unsigned char b6_carry, is_carry;
 
-  registers.accumulator += data + (registers.status & STATUS_C);
+  bit_carry(registers.accumulator, data, registers.status & STATUS_C, &b6_carry, &is_carry);
 
-  if(before <= 0x7F && (registers.accumulator >= 0x80 || registers.accumulator < before)) {
+  if(((registers.accumulator & (1 << 7)) && (data & (1 << 7)) && !b6_carry) || (!(registers.accumulator & (1 << 7)) && !(data & (1 << 7)) && b6_carry)) {
     registers.status |= STATUS_V;
   } else {
     registers.status &= ~STATUS_V;
   }
 
+  registers.accumulator += data + (registers.status & STATUS_C);
+
   set_z_flag(registers.accumulator);
   set_n_flag(registers.accumulator);
 
-  if(registers.accumulator < before) {
+  if(is_carry) {
     registers.status |= STATUS_C;
   } else {
     registers.status &= ~STATUS_C;
@@ -40,22 +70,25 @@ void exec_adc(unsigned char data) {
 
 void exec_sbc(unsigned char data) {
   unsigned char before = registers.accumulator;
+  unsigned char b6_carry, is_carry;
 
-  registers.accumulator = registers.accumulator - data - (1 - (registers.status & STATUS_C));
+  bit_carry(registers.accumulator, ~data, registers.status & STATUS_C, &b6_carry, &is_carry);
 
-  if(before >= 0x80 && (registers.accumulator <= 0x7F || before < registers.accumulator)) {
+  if(((registers.accumulator & (1 << 7)) && !(data & (1 << 7)) && !b6_carry) || (!(registers.accumulator & (1 << 7)) && (data & (1 << 7)) && b6_carry)) {
     registers.status |= STATUS_V;
   } else {
     registers.status &= ~STATUS_V;
   }
 
+  registers.accumulator = registers.accumulator - data - (1 - (registers.status & STATUS_C));
+
   set_z_flag(registers.accumulator);
   set_n_flag(registers.accumulator);
 
-  if(registers.accumulator > before) {
-    registers.status &= ~STATUS_C;
-  } else {
+  if(is_carry) {
     registers.status |= STATUS_C;
+  } else {
+    registers.status &= ~STATUS_C;
   }
 }
 
@@ -81,6 +114,7 @@ void calc_immediate(void (*calc_exec)(unsigned char)) {
   unsigned char data;
   
   data = memory_read(registers.pc + 1);
+  ppu_cycle();
   calc_exec(data);
 }
 

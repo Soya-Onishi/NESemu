@@ -282,7 +282,7 @@ int transfer_indirect_y(void (*exec_trans)(unsigned short)) {
   before = exec_addr;
   exec_addr += registers.index_y;
 
-  if((before & 0xFF00) != (exec_addr & 0xFF00)) {
+  if(((before & 0xFF00) != (exec_addr & 0xFF00)) || (exec_trans == exec_sta)) {
     //addtional_cycle++;
     ppu_cycle();
   }

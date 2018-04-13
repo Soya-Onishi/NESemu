@@ -154,7 +154,7 @@ int rti_implied() {
   pc_upper = memory_read(0x0100 | ++registers.stack);
   ppu_cycle();
 
-  registers.status = status;
+  registers.status = status | (1 << 5);
   registers.pc = ((unsigned short)pc_upper << 8) + pc_lower;
   registers.pc -= 1; // 1 is byte length of RTI instruction
 
