@@ -5,8 +5,10 @@
 #include"cpu_circuit.h"
 #include"instructions/interrupt_inst.h"
 #include"ppu.h"
+#include"cpu.h"
 
 void print_instruction(instruction inst);
+void print_cycle();
 
 int test_start = 0;
 test_status *tester;
@@ -56,27 +58,50 @@ int fetch_instruction() {
     return 7;
   }
 
+  #ifdef DEBUG
+  {
+    static int first = 1;
+    if(first) {
+      registers.pc = 0xC000;
+      registers.status = 0x24;
+      first = 0;
+      is_reset = 0;
+    }
+  }
+  #endif
+
   opcode = memory_read(registers.pc);
   ppu_cycle();
   
   inst = instruction_set[opcode];
-  //print_instruction(inst);
+  print_instruction(inst);
   additional_cycle = inst.instruction();
+
   registers.pc += inst.length;
 
   return additional_cycle + inst.cycle;
 }
 
 void print_instruction(instruction inst) {
+  #ifdef DEBUG
   int i;
-
-  if(!test_start) return;
 
   printf("%04X  ", registers.pc);
   for(i = 0; i < inst.length; i++) {
     printf("%02X ", memory[registers.pc + i]);
   }
-  printf("\n");
+  for(; i < 3; i++) {
+    printf("   ");
+  }
+
+  printf(" A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%3d\n",
+         registers.accumulator, registers.index_x, registers.index_y,
+         registers.status, registers.stack, (ppu_cycle_number + 341 - 3) % 341);
+  #endif
+}
+
+void print_cycle() {
+  printf("CYC:%3d\n", ppu_cycle_number);
 }
 
 

@@ -81,4 +81,7 @@ void vram_write(unsigned short addr, unsigned char data);
 unsigned char vram_read(unsigned short addr);
 unsigned char bit_reverse(unsigned char data);
 
+extern int ppu_cycle_number;
+extern int is_reset;
+
 #endif

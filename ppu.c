@@ -48,8 +48,18 @@ float pallet_colors[0x40][3] = {
   {204, 210, 120}, {180, 222, 120}, {168, 226, 144}, {152, 226, 180}, {160, 214, 228}, {160, 162, 160}, {0, 0, 0}, {0, 0, 0}
 };
 
+int ppu_cycle_number = 0;
+int is_reset = 1;
+
 void ppu_cycle() {
   int i;
+
+  #ifdef DEBUG
+  if(is_reset) return;
+
+  ppu_cycle_number = (ppu_cycle_number + 3) % 341;
+  return;
+  #endif
 
   for(i = 0; i < 3; i++) {
     ppu_rendering();
