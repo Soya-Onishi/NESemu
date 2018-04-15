@@ -2,6 +2,7 @@
 #include"../memory.h"
 #include"../status_flag_manager.h"
 #include"../ppu.h"
+#include "../window.h"
 
 #define RESET_VEC_LOWER 0xfffc
 #define RESET_VEC_UPPER 0xfffd
@@ -23,6 +24,7 @@ int reset_implied() {
   registers.status |= STATUS_I;
   registers.stack -= 3;
   reset_ppu();
+  init_window(WINDOW_RESET);
   
   ppu_cycle();
 

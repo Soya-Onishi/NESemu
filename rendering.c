@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include "GL/gl.h"
 #include "GL/glut.h"
 #include "ppu.h"
 #include "ppu_rendering.h"
 #include "cpu.h"
+#include "window.h"
 
 void renew_registers();
 void address_to_color();
@@ -55,8 +57,7 @@ void rendering() {
       }
       renew_registers();
 
-      //store addr;
-      rendering_addrs[scanline][dots - 1] = addr;
+      partical_drawing(addr);
     } else if(dots >= 321 && dots <= 337) {
       renew_registers();
     }
@@ -78,8 +79,10 @@ void rendering() {
     */
     
   } else if(scanline == 240) {
-    address_to_color();
-
+    //address_to_color();
+    if(dots == 1) {
+      ready_for_drawing = 1;
+    }
   /*
     int x, y;
 
@@ -177,7 +180,7 @@ void address_to_color() {
       }
 
       for(j = 0; j < 3; j++) {
-        rendering_color[dots][i][j] = pallet_colors[color_addr][j];
+        rendering_color[dots][i][j] = palette_colors[color_addr][j];
       }
 
       /*
@@ -203,6 +206,7 @@ void address_to_color() {
   }
 }
 
+/*
 void display() {
   int x, y;
   const int WIDTH = 256, HEIGHT = 240;
@@ -229,6 +233,7 @@ void display() {
   glutSwapBuffers();
   return;
 }
+*/
 
 void reload_shift_reg() {
   int i;

@@ -2,6 +2,7 @@
   "C_Cpp.errorSquiggles": "Disabled",
   "files.associations": {
     "*.c": "c",
-    "cpu_circuit.h": "c"
+    "cpu_circuit.h": "c",
+    "glut.h": "c"
   }
 }

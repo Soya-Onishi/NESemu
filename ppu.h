@@ -70,7 +70,7 @@ extern unsigned char second_oam[8][4];
 
 extern unsigned short rendering_addrs[240][256];
 extern float rendering_color[240][256][3];
-extern float pallet_colors[0x40][3];
+extern unsigned char palette_colors[0x40][3];
 
 void ppu_cycle();
 

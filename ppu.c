@@ -4,10 +4,11 @@
 #include "ppu.h"
 #include "ppu_rendering.h"
 #include "cpu.h"
+#include "window.h"
 
 #define MAX_SCANLINE 262
 
-void init_display_color();
+//void init_display_color();
 unsigned short convert_address(unsigned short addr);
 void init_vram();
 
@@ -37,7 +38,7 @@ unsigned char second_oam[8][4];
 unsigned short rendering_addrs[240][256];
 float rendering_color[240][256][3];
 
-float pallet_colors[0x40][3] = {
+unsigned char palette_colors[0x40][3] = {
   {84, 84, 84}, {0, 30, 116}, {8, 16, 144}, {48, 0, 136}, {68, 0, 100}, {92, 0, 48}, {84, 4, 0}, {60, 24, 0}, 
   {32, 42, 0}, {8, 58, 0}, {0, 64, 0}, {0, 60, 0}, {0, 50, 60}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
   {152, 150, 152}, {8, 76, 196}, {48, 50, 236}, {92, 30, 228}, {136, 20, 176}, {160, 20, 100}, {152, 34, 32}, {120, 60, 0},
@@ -91,17 +92,11 @@ void init_ppu() {
   ppu_reg.ppuaddr = 0;
   ppu_reg.oamdata = 0;
 
-  for(i = 0; i < 0x40; i++) {
-    for(j = 0; j < 3; j++) {
-      pallet_colors[i][j] /= 255.0;
-    }
-  }
-
   for(i = 0x2000; i < 0x4000; i++) {
     vram[i] = 0;
   }
 
-  init_display_color();
+  //init_display_color();
   init_vram();
   init_oam();
 }
@@ -118,10 +113,11 @@ void reset_ppu() {
   ppu_reg.ppuaddr = 0;
   ppu_reg.oamdata = 0;
 
-  init_display_color();
+  //init_display_color();
   init_oam();
 }
 
+/*
 void init_display_color() {
   int x, y, i;
 
@@ -133,6 +129,7 @@ void init_display_color() {
     }
   }
 }
+*/
 
 void vram_write(unsigned short addr, unsigned char data) {
   if(addr >= 0x4000) {

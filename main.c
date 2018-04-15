@@ -3,8 +3,8 @@
 #include"cpu.h"
 #include"ppu.h"
 #include"memory.h"
-#include"rendering.h"
 #include"controller.h"
+#include "window.h"
 
 #define WINDOW_WIDTH 256
 #define WINDOW_HEIGHT 240
@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
   glutKeyboardUpFunc(key_up);
 
   glClearColor(1.0, 1.0, 1.0, 1.0);
+  init_window(WINDOW_POWER_ON);
   init_cpu();
   init_ppu();
   open_file(argv[1]);
