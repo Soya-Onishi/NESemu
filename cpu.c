@@ -25,6 +25,8 @@ void cpu() {
       stdtime = time + 1000 / 60;
       glutPostRedisplay();
       ready_for_drawing = 0;
+    } else {
+      printf("faster\n");
     }
   } else {
     fetch_instruction();

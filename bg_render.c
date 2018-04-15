@@ -18,7 +18,7 @@ void bg_render() {
     bg_visible_frame();
   } else if(scanline == 240) {
     bg_post_rendering();
-  } else if(scanline >= 241 && scanline <= 260) {
+  } else {
     bg_vblank();
   }
 }

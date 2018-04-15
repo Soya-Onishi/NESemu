@@ -70,9 +70,6 @@ void sprite_evaluation() {
     sprite_zero_exist = 0;
     //n = 0;
     //m = 0;
-    if(n != 0) {
-      printf("not zero\n");
-    }
     offset = 0;
   }
 

@@ -180,7 +180,7 @@ void renew_registers() {
 
   if((scanline >= 0 && scanline <= 239) || scanline == -1 || scanline == 261) {
     if(dots >= 1 && dots <= 336) {
-      if(dots >= 9 && dots % 8 == 1) {
+      if(dots >= 9 && ((dots & 7) == 1)) {
         reload_shift_reg();
       }
       
