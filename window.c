@@ -9,7 +9,8 @@
 #define WINDOW_WIDTH 256
 #define WINDOW_HEIGHT 240
 
-static unsigned char palette_addrs[WINDOW_HEIGHT][WINDOW_WIDTH];
+void convert_palette_address();
+
 static GLubyte texture[WINDOW_HEIGHT * WINDOW_WIDTH * 3];
 static GLuint texid;
 
@@ -18,18 +19,7 @@ void init_window(power_on_type type) {
   int x, y;
 
   for(i = 0; i < limit; i++) {
-    if(i % 3 == 0) {
-      texture[i] = 128;
-    } else {
-      texture[i] = 0;
-    }
-    
-  }
-  
-  for(y = 0; y < WINDOW_HEIGHT; y++) {
-    for(x = 0; x < WINDOW_WIDTH; x++) {
-      palette_addrs[y][x] = 0x3F;
-    }
+    texture[i] = 0;
   }
 
   if(type == WINDOW_RESET) return;
@@ -42,6 +32,7 @@ void init_window(power_on_type type) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
+/*
 void partical_drawing(unsigned char addr) {
   int x, y, i;
 
@@ -61,12 +52,30 @@ void partical_drawing(unsigned char addr) {
   glBindTexture(GL_TEXTURE_2D, texid);
   glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, texture);
 }
+*/
+
+void convert_palette_address() {
+  int x, y, i;
+
+  for(y = 8; y < WINDOW_HEIGHT - 8; y++) {
+    for(x = 0; x < WINDOW_WIDTH; x++) {
+      unsigned char color_number = vram[rendering_addrs[y][x]];
+      
+      for(i = 0; i < 3; i++) {
+        texture[i + x * 3 + y * WINDOW_WIDTH * 3] = palette_colors[color_number][i];
+      }
+    }
+  }
+}
 
 void display() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  convert_palette_address();
+
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, texid);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
 
   glBegin(GL_QUADS);
   glTexCoord2f(0, 0); glVertex2i(0, 0);

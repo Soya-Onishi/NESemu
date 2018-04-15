@@ -16,12 +16,13 @@ void cpu() {
   if(ready_for_drawing) {
     //display rendering result by openGL
     static int stdtime = 1000 / 60;
+    static int count = 0;
     int time;
 
     time = glutGet(GLUT_ELAPSED_TIME);
 
     if(time >= stdtime) {
-      stdtime += 1000 / 60;
+      stdtime = time + 1000 / 60;
       glutPostRedisplay();
       ready_for_drawing = 0;
     }

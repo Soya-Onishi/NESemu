@@ -29,13 +29,40 @@ void rendering() {
       bg_pallet = bg_addr & 3;
       sprite_pallet = sprite_addr & 3;
 
+      /*
       if((~ppu_reg.mask & SPRITE_MASK) && dots >= 1 && dots <= 8) {
         sprite_pallet = 0;
       }
       if((~ppu_reg.mask & BG_MASK) && dots >= 1 && dots <= 8) {
         bg_pallet = 0;
       }
+      */
+     
+      if(bg_pallet == 0) {
+        if(sprite_pallet) {
+          //sprite_pallet != 0
+          addr = sprite_addr;
+        } else {
+          //sprite_pallet == 0
+          addr = 0x3F00;
+        }
+      } else {
+        if(sprite_pallet) {
+          if(sp.is_sprite_zero && dots != 256) {
+            ppu_reg.status |= SPRITE_HIT;
+          }
+        
+          if(sp.attribute & BG_PRIO) {
+            addr = bg_addr;
+          } else {  
+            addr = sprite_addr;
+          }
+        } else {
+          addr = bg_addr;
+        }
+      }
 
+      /*
       if(bg_pallet == 0 && sprite_pallet == 0) {
         addr = 0x3F00;
       } else if(bg_pallet == 0 && sprite_pallet != 0) {
@@ -55,9 +82,11 @@ void rendering() {
 
         addr = sprite_addr;
       }
+      */
+     
       renew_registers();
 
-      partical_drawing(addr);
+      rendering_addrs[scanline][dots - 1] = addr;
     } else if(dots >= 321 && dots <= 337) {
       renew_registers();
     }
