@@ -2,11 +2,14 @@
 #include "ppu.h"
 #include "ppu_rendering.h"
 
+static void (*visible_funcs[341]);
+
 void sprite_visible();
 void sprite_pre_render();
 
 void sprite_evaluation();
-void sprite_fetch(int dots);
+void sprite_fetch();
+void clear_secondary_oam();
 
 void sprite_render() {
   int scanline = get_scanline();
@@ -31,7 +34,17 @@ void sprite_visible() {
   } else if(dots >= 257 && dots <= 320) {
     //fetch sprites
     ppu_reg.oamaddr = 0;
-    sprite_fetch(dots);
+    sprite_fetch();
+  }
+}
+
+void clear_secondary_oam() {
+  int n, m;
+
+  for(n = 0; n < 64; n++) {
+    for(m = 0; m < 4; m++) {
+      second_oam[n][m] = 0xFF;
+    }
   }
 }
 
