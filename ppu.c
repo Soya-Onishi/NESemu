@@ -99,6 +99,8 @@ void init_ppu() {
   //init_display_color();
   init_vram();
   init_oam();
+
+  init_rendering_funcs();
 }
 
 void reset_ppu() {

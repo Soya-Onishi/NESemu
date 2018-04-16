@@ -21,6 +21,29 @@ void sprite_render() {
   }
 }
 
+void initialize_second_oam() {
+  int i, j;
+
+  if(~ppu_reg.mask & SPRITE_ENABLE) return;
+
+  for(i = 0; i < 8; i++) {
+    for(j = 0; j < 4; j++) {
+      second_oam[i][j] = 0xFF;
+    }
+  }
+}
+
+void reset_oamaddr_and_fetch_sprite() {
+  int dots;
+
+  if(~ppu_reg.mask & SPRITE_ENABLE) return;
+
+  dots = get_dots();
+
+  ppu_reg.oamaddr = 0;
+  sprite_fetch(dots);
+}
+
 void sprite_visible() {
   int dots = get_dots();
 
@@ -34,17 +57,7 @@ void sprite_visible() {
   } else if(dots >= 257 && dots <= 320) {
     //fetch sprites
     ppu_reg.oamaddr = 0;
-    sprite_fetch();
-  }
-}
-
-void clear_secondary_oam() {
-  int n, m;
-
-  for(n = 0; n < 64; n++) {
-    for(m = 0; m < 4; m++) {
-      second_oam[n][m] = 0xFF;
-    }
+    sprite_fetch(dots);
   }
 }
 
@@ -67,6 +80,9 @@ void sprite_evaluation() {
   static int offset = 0;
   static int writing_disable = 0;
   int range = 8;
+
+  if(~ppu_reg.mask & SPRITE_ENABLE) return;
+
   int scanline = get_scanline();
   int dots = get_dots();
 
@@ -86,7 +102,7 @@ void sprite_evaluation() {
     offset = 0;
   }
 
-  if(dots % 2 == 0) {
+  if((dots & 1) == 0) {
     if(ppu_reg.ctrl & SPRITE_SIZE) {
       //renewing range for 8*16 mode
       range = 16;

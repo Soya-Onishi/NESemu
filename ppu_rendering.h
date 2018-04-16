@@ -6,5 +6,6 @@ int get_scanline();
 int get_frame();
 
 void ppu_rendering();
+void init_rendering_funcs();
 
 #endif

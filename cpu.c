@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<sys/time.h>
 #include"GL/glut.h"
 #include"cpu_circuit.h"
 #include"ppu.h"
@@ -17,16 +18,21 @@ void cpu() {
     //display rendering result by openGL
     static int stdtime = 1000 / 60;
     static int count = 0;
+    static int first = 1;
     int time;
 
     time = glutGet(GLUT_ELAPSED_TIME);
 
     if(time >= stdtime) {
+      count++;
+      if(!first) printf("%d not fast\n", count);
       stdtime = time + 1000 / 60;
       glutPostRedisplay();
       ready_for_drawing = 0;
+      
+      first = 1;
     } else {
-      printf("faster\n");
+      first = 0;
     }
   } else {
     fetch_instruction();
