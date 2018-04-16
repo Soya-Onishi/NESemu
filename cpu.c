@@ -7,11 +7,17 @@
 #include"cpu.h"
 #include "memory.h"
 
+#define FPS_TIME (1000000 / 60)
+
 void test_log_load();
+void set_timer();
+unsigned long get_time();
 
 int ready_for_drawing = 0;
 
 unsigned char nes_flag6;
+
+struct timeval start, now;
 
 void cpu() {
   if(ready_for_drawing) {
@@ -19,20 +25,15 @@ void cpu() {
     static int stdtime = 1000 / 60;
     static int count = 0;
     static int first = 1;
-    int time;
 
-    time = glutGet(GLUT_ELAPSED_TIME);
-
-    if(time >= stdtime) {
+    if(get_time() >= FPS_TIME) {
+      printf("\n");
       count++;
-      if(!first) printf("%d not fast\n", count);
-      stdtime = time + 1000 / 60;
+      set_timer();
       glutPostRedisplay();
       ready_for_drawing = 0;
-      
-      first = 1;
     } else {
-      first = 0;
+      printf("%d slow ", count);
     }
   } else {
     fetch_instruction();
@@ -51,7 +52,7 @@ void init_cpu() {
   registers.stack = 0;
 
   init_memory();
-
+  set_timer();
   //test_log_load();
 }
 
@@ -75,4 +76,14 @@ void test_log_load() {
     tester[i].pc, tester[i].content[0], tester[i].content[1], tester[i].content[2], 
     tester[i].a, tester[i].x, tester[i].y, tester[i].p, tester[i].sp, tester[i].ppu_cycle);
   }  
+}
+
+void set_timer() {
+  gettimeofday(&start, NULL);
+}
+
+unsigned long get_time() {
+  gettimeofday(&now, NULL);
+
+  return (now.tv_sec * 1000000 + now.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec);
 }
