@@ -5,9 +5,11 @@
 #include"cpu_circuit.h"
 #include"instructions/interrupt_inst.h"
 #include"ppu.h"
+#include"ppu_rendering.h"
 #include"cpu.h"
 
 void print_instruction(instruction inst);
+void print_ppu_status(unsigned char opcode);
 void print_cycle();
 
 int test_start = 0;
@@ -77,9 +79,15 @@ int fetch_instruction() {
   print_instruction(inst);
   additional_cycle = inst.instruction();
 
+  print_ppu_status(opcode);
+
   registers.pc += inst.length;
 
   return additional_cycle + inst.cycle;
+}
+
+void print_ppu_status(unsigned char opcode) {
+  printf("%2X: %d %d\n", opcode, get_true_scanline(), get_true_dots());
 }
 
 void print_instruction(instruction inst) {

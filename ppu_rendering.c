@@ -219,6 +219,10 @@ int get_true_scanline() {
   return true_scanline;
 }
 
+int get_true_dots() {
+  return true_dots;
+}
+
 void nothing_to_do() {
   //nothing to do
 }

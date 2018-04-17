@@ -6,6 +6,7 @@ int get_scanline();
 int get_frame();
 
 int get_true_scanline();
+int get_true_dots();
 
 void ppu_rendering();
 void start_rendering();
