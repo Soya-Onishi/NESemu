@@ -16,11 +16,11 @@ void nothing_to_do();
 
 static int dots = 0;
 static int scanline = 261;
-static int frame = 0;
+static int frame = 1;
 
 static int true_dots = 0;
 static int true_scanline = 261;
-static int true_frame = 0;
+static int true_frame = 1;
 
 static int remain_cycle = 0;
 
@@ -152,10 +152,11 @@ void init_rendering_funcs() {
 void ppu_rendering() {
   
   
-  if(true_scanline == 0 && true_dots == 0 && true_frame % 2 == 1) {
+  if(true_scanline == 0 && true_dots == 0 && true_frame % 2 == 1 && (~ppu_reg.mask & BG_ENABLE) && (~ppu_reg.mask & SPRITE_ENABLE)) {
     true_dots++;
   }
 
+  ppu_cycle_number++;
   remain_cycle++;
   
   if(true_scanline == 241 && true_dots == 2) {
