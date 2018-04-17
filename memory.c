@@ -110,6 +110,8 @@ void memory_write(unsigned short addr, unsigned char data) {
 unsigned char read_from_status() {
   unsigned char status = ppu_reg.status;
 
+  force_ppu_cycle();
+
   ppu_render_info.toggle = 0;
   ppu_reg.status &= (SPRITE_HIT | SPRITE_OVERFLOW);
   ppu_data_bus = status;
@@ -120,6 +122,8 @@ unsigned char read_from_status() {
 unsigned char read_from_oamdata() {
   int scanline = get_scanline();
   int upper, lower;
+
+  force_ppu_cycle();
 
   upper = (ppu_reg.oamaddr >> 2) & 0x3F;
   lower = ppu_reg.oamaddr & 3;
@@ -134,8 +138,10 @@ unsigned char read_from_oamdata() {
 }
 
 void write_to_oamdata(unsigned char data) {
-  int scanline = get_scanline();
+  int scanline = get_true_scanline();
   int upper, lower;
+
+  force_ppu_cycle();
 
   if(/*(ppu_reg.mask & SPRITE_ENABLE) && (ppu_reg.mask & BG_ENABLE) && ((scanline >= 0 && scanline <= 239) || scanline == -1 || scanline == 261)*/0) {
     ppu_reg.oamaddr += 0x04;
@@ -150,6 +156,8 @@ void write_to_oamdata(unsigned char data) {
 }
 
 void write_to_ppuaddr(unsigned char data) {
+  force_ppu_cycle();
+
   if(ppu_render_info.toggle) {
     //write to lower bits
     ppu_render_info.t = (ppu_render_info.t & 0xFF00) | data;
@@ -163,6 +171,8 @@ void write_to_ppuaddr(unsigned char data) {
 }
 
 void write_to_scroll(unsigned char data) {
+  force_ppu_cycle();
+
   if(ppu_render_info.toggle) {
     //write vertical scroll
     unsigned short fine_y, coarse_y;
@@ -187,6 +197,7 @@ void write_to_scroll(unsigned char data) {
 }
 
 void write_to_ppudata(unsigned char data) {
+  force_ppu_cycle();
   vram_write(ppu_render_info.v, data);
   address_increment();
 }
@@ -194,6 +205,8 @@ void write_to_ppudata(unsigned char data) {
 unsigned char read_from_ppudata() {
   static unsigned char data_buffer = 0;
   unsigned char return_data;
+
+  force_ppu_cycle();
 
   return_data = data_buffer;
   data_buffer = vram_read(ppu_render_info.v);

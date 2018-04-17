@@ -22,18 +22,18 @@ struct timeval start, now;
 void cpu() {
   if(ready_for_drawing) {
     //display rendering result by openGL
-    static int stdtime = 1000 / 60;
     static int count = 0;
-    static int first = 1;
+    static int counter = 0;
 
     if(get_time() >= FPS_TIME) {
-      printf("\n");
+      //printf("%d %d: %lu\n", count, counter, get_time() - FPS_TIME);
       count++;
       set_timer();
       glutPostRedisplay();
       ready_for_drawing = 0;
+      counter = 0;
     } else {
-      printf("%d slow ", count);
+      counter++;
     }
   } else {
     fetch_instruction();

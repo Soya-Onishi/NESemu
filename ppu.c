@@ -80,6 +80,10 @@ void ppu_cycle() {
   */
 }
 
+void force_ppu_cycle() {
+  start_rendering();
+}
+
 void init_ppu() {
   int i, j;
 

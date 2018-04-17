@@ -73,6 +73,7 @@ extern float rendering_color[240][256][3];
 extern unsigned char palette_colors[0x40][3];
 
 void ppu_cycle();
+void force_ppu_cycle();
 
 void init_ppu();
 void reset_ppu();

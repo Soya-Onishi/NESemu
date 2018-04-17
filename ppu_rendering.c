@@ -1,6 +1,7 @@
 #include "ppu.h"
 #include "bg_render.h"
 #include "sprite_render.h"
+#include "ppu_rendering.h"
 #include "rendering.h"
 
 #define MAX_SCANLINE 262
@@ -16,6 +17,12 @@ void nothing_to_do();
 static int dots = 0;
 static int scanline = 261;
 static int frame = 0;
+
+static int true_dots = 0;
+static int true_scanline = 261;
+static int true_frame = 0;
+
+static int remain_cycle = 0;
 
 static void (*rendering_funcs[MAX_SCANLINE][MAX_DOTS][4])();
 
@@ -143,27 +150,56 @@ void init_rendering_funcs() {
 }
 
 void ppu_rendering() {
-  void (*bg_rendering)(), (*sprite_rendering)(), (*render)(), (*reg_manage)();
   
-  if(scanline == 0 && dots == 0 && frame % 2 == 1) {
-    dots++;
+  
+  if(true_scanline == 0 && true_dots == 0 && true_frame % 2 == 1) {
+    true_dots++;
   }
+
+  remain_cycle++;
   
-  //process
-  bg_rendering = rendering_funcs[scanline][dots][BG_OFFSET];
-  sprite_rendering = rendering_funcs[scanline][dots][SPRITE_OFFSET];
-  render = rendering_funcs[scanline][dots][RENDER_OFFSET];
-  reg_manage = rendering_funcs[scanline][dots][SHIFT_REG_OFFSET];
+  if(true_scanline == 241 && true_dots == 2) {
+    start_rendering();
+  }
 
-  bg_rendering();
-  sprite_rendering();
-  render();
-  reg_manage();
+  true_dots++;
+  if(true_dots == MAX_DOTS) {
+    true_dots = 0;
+    true_scanline = (true_scanline + 1) % (MAX_SCANLINE);
 
-  dots++;
-  if(dots == MAX_DOTS) {
-    dots = 0;
-    scanline = (scanline + 1) % (MAX_SCANLINE);
+    if(true_scanline == 0) {
+      true_frame++;
+    }
+  }
+}
+
+void start_rendering() {
+  void (*bg_rendering)(), (*sprite_rendering)(), (*render)(), (*reg_manage)();
+
+  for(; remain_cycle > 0; remain_cycle--) {
+    if(scanline == 0 && dots == 0 && (frame & 1) == 1) {
+      dots++;
+    }
+
+    bg_rendering = rendering_funcs[scanline][dots][BG_OFFSET];
+    sprite_rendering = rendering_funcs[scanline][dots][SPRITE_OFFSET];
+    render = rendering_funcs[scanline][dots][RENDER_OFFSET];
+    reg_manage = rendering_funcs[scanline][dots][SHIFT_REG_OFFSET];
+
+    bg_rendering();
+    sprite_rendering();
+    render();
+    reg_manage();
+
+    dots++;
+    if(dots == MAX_DOTS) {
+      dots = 0;
+      scanline = (scanline + 1) % MAX_SCANLINE;
+
+      if(scanline == 0) {
+        frame++;
+      }
+    }
   }
 }
 
@@ -177,6 +213,10 @@ int get_scanline() {
 
 int get_frame() {
   return frame;
+}
+
+int get_true_scanline() {
+  return true_scanline;
 }
 
 void nothing_to_do() {
