@@ -39,7 +39,6 @@ void reset_oamaddr_and_fetch_sprite() {
   if(~ppu_reg.mask & SPRITE_ENABLE) return;
 
   dots = get_dots();
-
   ppu_reg.oamaddr = 0;
   sprite_fetch(dots);
 }

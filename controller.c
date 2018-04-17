@@ -70,6 +70,20 @@ void display_nametable() {
     printf("\n=================================================================\n\n");
 }
 
+void display_oam() {
+  int n, m;
+
+  for(n = 0; n < 64; n++) {
+    printf("%d: ", n);
+    for(m = 0; m < 4; m++) {
+      printf("%2X ", oam[n][m]);
+    }
+    printf("\n");
+  }
+
+  printf("\n===================================================\n\n");
+}
+
 void key_down(unsigned char key, int x, int y) {
   switch(key) {
     case 'a':
@@ -89,7 +103,7 @@ void key_down(unsigned char key, int x, int y) {
       p1_internal_register |= CONTROLLER_SELECT;
       break;
     case 'm':
-      //display_nametable();
+      display_oam();
       test_start = 1;
       break;
   }
