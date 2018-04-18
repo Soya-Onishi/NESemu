@@ -163,3 +163,24 @@ void special_key_up(int key, int x, int y) {
       break;
   }
 }
+
+void joystick(unsigned int button_mask, int x, int y, int z) {
+  p1_internal_register = 0;
+
+  if(x < -100) {
+    p1_internal_register |= CONTROLLER_LEFT;
+  } else if(x > 100) {
+    p1_internal_register |= CONTROLLER_RIGHT;
+  }
+
+  if(y > 100) {
+    p1_internal_register |= CONTROLLER_DOWN;
+  } else if(y < -100) {
+    p1_internal_register |= CONTROLLER_UP;
+  }
+
+  if(button_mask & (1 << 0)) p1_internal_register |= CONTROLLER_B;
+  if(button_mask & (1 << 1)) p1_internal_register |= CONTROLLER_A;
+  if(button_mask & (1 << 6)) p1_internal_register |= CONTROLLER_SELECT;
+  if(button_mask & (1 << 7)) p1_internal_register |= CONTROLLER_START;
+}

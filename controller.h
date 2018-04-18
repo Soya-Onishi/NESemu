@@ -17,5 +17,6 @@ void key_down(unsigned char key, int x, int y);
 void key_up(unsigned char key, int x, int y);
 void special_key_down(int key, int x, int y);
 void special_key_up(int key, int x, int y);
+void joystick(unsigned int button_mask, int x, int y, int z);
 
 #endif

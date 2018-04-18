@@ -26,14 +26,10 @@ void cpu() {
     static int counter = 0;
 
     if(get_time() >= FPS_TIME) {
-      printf("%6d %6d\n", count, counter);
-      count++;
+      glutForceJoystickFunc();
       set_timer();
       glutPostRedisplay();
       ready_for_drawing = 0;
-      counter = 0;
-    } else {
-      counter++;
     }
   } else {
     fetch_instruction();

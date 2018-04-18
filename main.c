@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
   glutSpecialUpFunc(special_key_up);
   glutKeyboardFunc(key_down);
   glutKeyboardUpFunc(key_up);
+  glutJoystickFunc(joystick, 10);
 
   glClearColor(1.0, 1.0, 1.0, 1.0);
   init_window(WINDOW_POWER_ON);
