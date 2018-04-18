@@ -143,7 +143,7 @@ void write_to_oamdata(unsigned char data) {
 
   force_ppu_cycle();
 
-  if(/*(ppu_reg.mask & SPRITE_ENABLE) && (ppu_reg.mask & BG_ENABLE) && ((scanline >= 0 && scanline <= 239) || scanline == -1 || scanline == 261)*/0) {
+  if((ppu_reg.mask & SPRITE_ENABLE) && (ppu_reg.mask & BG_ENABLE) && ((scanline >= 0 && scanline <= 239) || scanline == -1 || scanline == 261)) {
     ppu_reg.oamaddr += 0x04;
   } else {
     upper = (ppu_reg.oamaddr >> 2) & 0x3F;
@@ -245,9 +245,11 @@ void dma_exec(unsigned char std_addr) {
     lower = i & 3;
 
     data = oam[upper][lower];
+    force_ppu_cycle();
     oam[upper][lower] = memory_read(addr);
     ppu_cycle();
 
+    force_ppu_cycle();
     memory_write(addr, oam[upper][lower]);
     ppu_cycle();
     

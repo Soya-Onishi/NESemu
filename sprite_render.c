@@ -80,7 +80,7 @@ void sprite_evaluation() {
   static int writing_disable = 0;
   int range = 8;
 
-  if(~ppu_reg.mask & SPRITE_ENABLE) return;
+  if((~ppu_reg.mask & SPRITE_ENABLE) && (~ppu_reg.mask & BG_ENABLE)) return;
 
   int scanline = get_scanline();
   int dots = get_dots();
