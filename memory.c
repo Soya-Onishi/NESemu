@@ -70,15 +70,18 @@ void memory_write(unsigned short addr, unsigned char data) {
   switch(addr) {
     case 0x2000:
       //write to ctrl register
+      force_ppu_cycle();
       ppu_reg.ctrl = data;
       ppu_render_info.t = (ppu_render_info.t & 0xF3FF) | ((data & 3) << 10); 
       break;
     case 0x2001:
       //write to mask register
+      force_ppu_cycle();
       ppu_reg.mask = data;
       break;
     case 0x2003:
       //write to sprite memory addr
+      force_ppu_cycle();
       ppu_reg.oamaddr = data;
       break;
     case 0x2004:

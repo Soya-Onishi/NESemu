@@ -178,7 +178,7 @@ void start_rendering() {
   void (*bg_rendering)(), (*sprite_rendering)(), (*render)(), (*reg_manage)();
 
   for(; remain_cycle > 0; remain_cycle--) {
-    if(scanline == 0 && dots == 0 && (frame & 1) == 1) {
+    if(scanline == 0 && dots == 0 && (frame & 1) == 1 && (~ppu_reg.mask & BG_ENABLE) && (~ppu_reg.mask & SPRITE_ENABLE)) {
       dots++;
     }
 
