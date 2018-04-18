@@ -79,7 +79,7 @@ int fetch_instruction() {
   print_instruction(inst);
   additional_cycle = inst.instruction();
 
-  print_ppu_status(opcode);
+  //print_ppu_status(opcode);
 
   registers.pc += inst.length;
 

@@ -26,7 +26,7 @@ void cpu() {
     static int counter = 0;
 
     if(get_time() >= FPS_TIME) {
-      //printf("%d %d: %lu\n", count, counter, get_time() - FPS_TIME);
+      printf("%6d %6d\n", count, counter);
       count++;
       set_timer();
       glutPostRedisplay();
