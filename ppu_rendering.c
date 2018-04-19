@@ -182,15 +182,12 @@ void start_rendering() {
       dots++;
     }
 
-    bg_rendering = rendering_funcs[scanline][dots][BG_OFFSET];
-    sprite_rendering = rendering_funcs[scanline][dots][SPRITE_OFFSET];
-    render = rendering_funcs[scanline][dots][RENDER_OFFSET];
-    reg_manage = rendering_funcs[scanline][dots][SHIFT_REG_OFFSET];
-
-    bg_rendering();
-    sprite_rendering();
-    render();
-    reg_manage();
+    if(scanline < 242 || scanline == 261) {
+      rendering_funcs[scanline][dots][BG_OFFSET]();
+      rendering_funcs[scanline][dots][SPRITE_OFFSET]();
+      rendering_funcs[scanline][dots][RENDER_OFFSET]();
+      rendering_funcs[scanline][dots][SHIFT_REG_OFFSET]();
+    }
 
     dots++;
     if(dots == MAX_DOTS) {
